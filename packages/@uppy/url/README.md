@@ -7,7 +7,7 @@
 
 The Url plugin lets users import files from the Internet. Paste any URL and it’ll be added!
 
-An Uppy Server instance is required for the Url plugin to work. Uppy Server will download the files and upload them to their destination. This saves bandwidth for the user (especially on mobile connections) and helps avoid CORS restrictions.
+A Companion instance is required for the Url plugin to work. Companion will download the files and upload them to their destination. This saves bandwidth for the user (especially on mobile connections) and helps avoid CORS restrictions.
 
 Uppy is being developed by the folks at [Transloadit](https://transloadit.com), a versatile file encoding service.
 
@@ -29,7 +29,7 @@ uppy.use(Url, {
 $ npm install @uppy/url --save
 ```
 
-We recommend installing from npm and then using a module bundler such as [Webpack](http://webpack.github.io/), [Browserify](http://browserify.org/) or [Rollup.js](http://rollupjs.org/).
+We recommend installing from npm and then using a module bundler such as [Webpack](https://webpack.js.org/), [Browserify](http://browserify.org/) or [Rollup.js](http://rollupjs.org/).
 
 Alternatively, you can also use this plugin in a pre-built bundle from Transloadit's CDN: Edgly. In that case `Uppy` will attach itself to the global `window.Uppy` object. See the [main Uppy documentation](https://uppy.io/docs/#Installation) for instructions.
 

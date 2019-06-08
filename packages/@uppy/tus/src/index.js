@@ -1,6 +1,6 @@
 const { Plugin } = require('@uppy/core')
 const tus = require('tus-js-client')
-const { Provider, RequestClient, Socket } = require('@uppy/server-utils')
+const { Provider, RequestClient, Socket } = require('@uppy/companion-client')
 const emitSocketProgress = require('@uppy/utils/lib/emitSocketProgress')
 const getSocketHost = require('@uppy/utils/lib/getSocketHost')
 const settle = require('@uppy/utils/lib/settle')
@@ -48,6 +48,8 @@ function createEventTracker (emitter) {
  *
  */
 module.exports = class Tus extends Plugin {
+  static VERSION = require('../package.json').version
+
   constructor (uppy, opts) {
     super(uppy, opts)
     this.type = 'uploader'
@@ -97,7 +99,7 @@ module.exports = class Tus extends Plugin {
 
   /**
    * Clean up all references for a file's upload: the tus.Upload instance,
-   * any events related to the file, and the uppy-server WebSocket connection.
+   * any events related to the file, and the Companion WebSocket connection.
    */
   resetUploaderReferences (fileID) {
     if (this.uploaders[fileID]) {
@@ -154,7 +156,11 @@ module.exports = class Tus extends Plugin {
       }
 
       optsTus.onSuccess = () => {
-        this.uppy.emit('upload-success', file, upload, upload.url)
+        const uploadResp = {
+          uploadURL: upload.url
+        }
+
+        this.uppy.emit('upload-success', file, uploadResp)
 
         if (upload.url) {
           this.uppy.log('Download ' + upload.file.name + ' from ' + upload.url)
@@ -173,10 +179,19 @@ module.exports = class Tus extends Plugin {
         }
       }
 
+      const meta = {}
+      const metaFields = Array.isArray(optsTus.metaFields)
+        ? optsTus.metaFields
+        // Send along all fields by default.
+        : Object.keys(file.meta)
+      metaFields.forEach((item) => {
+        meta[item] = file.meta[item]
+      })
+
       // tusd uses metadata fields 'filetype' and 'filename'
-      const meta = Object.assign({}, file.meta)
       copyProp(meta, 'type', 'filetype')
       copyProp(meta, 'name', 'filename')
+
       optsTus.metadata = meta
 
       const upload = new tus.Upload(file.data, optsTus)
@@ -202,6 +217,7 @@ module.exports = class Tus extends Plugin {
 
       this.onCancelAll(file.id, () => {
         this.resetUploaderReferences(file.id)
+        resolve(`upload ${file.id} was canceled`)
       })
 
       this.onResumeAll(file.id, () => {
@@ -251,14 +267,11 @@ module.exports = class Tus extends Plugin {
         this.uppy.setFileState(file.id, { serverToken: res.token })
         file = this.uppy.getFile(file.id)
         return file
-      })
-      .then((file) => {
+      }).then((file) => {
         return this.connectToServerSocket(file)
-      })
-      .then(() => {
+      }).then(() => {
         resolve()
-      })
-      .catch((err) => {
+      }).catch((err) => {
         reject(new Error(err))
       })
     })
@@ -267,7 +280,7 @@ module.exports = class Tus extends Plugin {
   connectToServerSocket (file) {
     return new Promise((resolve, reject) => {
       const token = file.serverToken
-      const host = getSocketHost(file.remote.serverUrl)
+      const host = getSocketHost(file.remote.companionUrl)
       const socket = new Socket({ target: `${host}/api/${token}` })
       this.uploaderSockets[file.id] = socket
       this.uploaderEvents[file.id] = createEventTracker(this.uppy)
@@ -313,7 +326,7 @@ module.exports = class Tus extends Plugin {
         const error = Object.assign(new Error(message), { cause: errData.error })
 
         // If the remote retry optimisation should not be used,
-        // close the socket—this will tell uppy-server to clear state and delete the file.
+        // close the socket—this will tell companion to clear state and delete the file.
         if (!this.opts.useFastRemoteRetry) {
           this.resetUploaderReferences(file.id)
           // Remove the serverToken so that a new one will be created for the retry.
@@ -327,19 +340,26 @@ module.exports = class Tus extends Plugin {
       })
 
       socket.on('success', (data) => {
-        this.uppy.emit('upload-success', file, data, data.url)
+        const uploadResp = {
+          uploadURL: data.url
+        }
+
+        this.uppy.emit('upload-success', file, uploadResp)
         this.resetUploaderReferences(file.id)
         resolve()
       })
     })
   }
 
+  /**
+   * Store the uploadUrl on the file options, so that when Golden Retriever
+   * restores state, we will continue uploading to the correct URL.
+   */
   onReceiveUploadUrl (file, uploadURL) {
     const currentFile = this.uppy.getFile(file.id)
     if (!currentFile) return
-    // Only do the update if we didn't have an upload URL yet,
-    // or resume: false in options
-    if ((!currentFile.tus || currentFile.tus.uploadUrl !== uploadURL) && this.opts.resume) {
+    // Only do the update if we didn't have an upload URL yet.
+    if (!currentFile.tus || currentFile.tus.uploadUrl !== uploadURL) {
       this.uppy.log('[Tus] Storing upload url')
       this.uppy.setFileState(currentFile.id, {
         tus: Object.assign({}, currentFile.tus, {

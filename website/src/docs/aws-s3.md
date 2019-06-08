@@ -1,12 +1,14 @@
 ---
 type: docs
-order: 32
-title: "AwsS3"
+order: 2
+title: "AWS S3"
+module: "@uppy/aws-s3"
 permalink: docs/aws-s3/
+category: 'Destinations'
 ---
 
-The `AwsS3` plugin can be used to upload files directly to an S3 bucket.
-Uploads can be signed using [Uppy Server][uppy-server docs] or a custom signing function.
+The `@uppy/aws-s3` plugin can be used to upload files directly to an S3 bucket.
+Uploads can be signed using either [Companion][companion docs] or a custom signing function.
 
 ```js
 const AwsS3 = require('@uppy/aws-s3')
@@ -15,54 +17,70 @@ const ms = require('ms')
 uppy.use(AwsS3, {
   limit: 2,
   timeout: ms('1 minute'),
-  serverUrl: 'https://uppy-server.myapp.com/'
+  companionUrl: 'https://uppy-companion.myapp.com/'
 })
 ```
 
-There are broadly two ways to upload to S3 in a browser. A server can generate a presigned URL for a [PUT upload](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html), or a server can generate form data for a [POST upload](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html). uppy-server uses a POST upload. See [POST uPloads](#post-uploads) for some caveats if you would like to use POST uploads without uppy-server. See [Generating a presigned upload URL server-side](#example-presigned-url) for an example of a PUT upload.
+There are broadly two ways of uploading to S3 in a browser. A server can generate a presigned URL for a [PUT upload](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html), or a server can generate form data for a [POST upload](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOST.html). Companion uses a POST upload. See [POST Uploads](#POST-uploads) for some caveats if you would like to use POST uploads without Companion. See [Generating a presigned upload URL server-side](#example-presigned-url) for an example of a PUT upload.
 
-There is also a separate plugin for S3 Multipart uploads. Multipart in this sense is Amazon's proprietary chunked, resumable upload mechanism for large files. See the [AwsS3Multipart](/docs/aws-s3-multipart) documentation.
+There is also a separate plugin for S3 Multipart uploads. Multipart in this sense refers to Amazon's proprietary chunked, resumable upload mechanism for large files. See the [`@uppy/aws-s3-multipart`](/docs/aws-s3-multipart) documentation.
 
 ## Installation
 
 This plugin is published as the `@uppy/aws-s3` package.
 
+Install from NPM:
+
 ```shell
 npm install @uppy/aws-s3
 ```
 
+In the [CDN package](/docs/#With-a-script-tag), it is available on the `Uppy` global object:
+
+```js
+const AwsS3 = Uppy.AwsS3
+```
+
 ## Options
+
+The `@uppy/aws-s3` plugin has the following configurable options:
 
 ### `id: 'AwsS3'`
 
 A unique identifier for this plugin. Defaults to `'AwsS3'`.
 
-### `serverUrl`
+### `companionUrl`
 
-When using [uppy-server][uppy-server docs] to sign S3 uploads, set this option to the root URL of the uppy-server.
+When using [Companion][companion docs] to sign S3 uploads, set this option to the root URL of the Companion instance.
 
 ```js
 uppy.use(AwsS3, {
-  serverUrl: 'https://uppy-server.my-app.com/'
+  companionUrl: 'https://uppy-companion.my-app.com/'
 })
 ```
 
+### `serverHeaders: {}`
+
+> Note: This only applies when using [Companion][companion docs] to sign S3 uploads.
+
+Custom headers that should be sent along to [Companion][companion docs] on every request.
+
 ### `getUploadParameters(file)`
 
-> Note: When using [uppy-server][uppy-server docs] to sign S3 uploads, do not define this option.
+> Note: When using [Companion][companion docs] to sign S3 uploads, do not define this option.
 
-A function returning upload parameters for a file.
+A function that returns upload parameters for a file.
 Parameters should be returned as an object, or a Promise for an object, with keys `{ method, url, fields, headers }`.
 
-The `method` field is the HTTP method to use for the upload.
-This should be one of `PUT` or `POST`, depending on the type of upload used.
+The `method` field is the HTTP method to be used for the upload.
+This should be one of either `PUT` or `POST`, depending on the type of upload used.
 
-The `url` field is the URL to send the upload request to.
-When using a presigned PUT upload, this should be the URL to the S3 object including signing parameters in the query string.
+The `url` field is the URL to which the upload request will be sent.
+When using a presigned PUT upload, this should be the URL to the S3 object with signing parameters included in the query string.
 When using a POST upload with a policy document, this should be the root URL of the bucket.
 
 The `fields` field is an object with form fields to send along with the upload request.
-For presigned PUT uploads, this should be empty.
+For presigned PUT uploads, this should be left empty.
 
 The `headers` field is an object with request headers to send along with the upload request.
 
@@ -94,13 +112,13 @@ strings: {
 ## S3 Bucket configuration
 
 S3 buckets do not allow public uploads by default.
-In order to allow Uppy to upload to a bucket directly, its CORS permissions need to be configured.
+In order to allow Uppy to upload directly to a bucket, at least its CORS permissions need to be configured, and you potentially need to change some of the *Public access settings* that provide an extra layer of public access protection even if the correct CORS permissions are in place.
 
 CORS permissions can be found in the [S3 Management Console](https://console.aws.amazon.com/s3/home).
 Click the bucket that will receive the uploads, then go into the "Permissions" tab and select the "CORS configuration" button.
 An XML document will be shown that contains the CORS configuration.
 
-Good practice is to use two CORS rules: one for viewing the uploaded files, and one for uploading files.
+It is good practice to use two CORS rules: one for viewing the uploaded files, and one for uploading files.
 
 Depending on which settings were enabled during bucket creation, AWS S3 may have defined a CORS rule that allows public reading already.
 This rule looks like:
@@ -126,7 +144,7 @@ At minimum, the domain from which the uploads will happen must be whitelisted, a
 <MaxAgeSeconds>3000</MaxAgeSeconds>
 ```
 
-When using uppy-server, which generates a POST policy document, the following permissions must be granted:
+When using Companion, which generates a POST policy document, the following permissions must be granted:
 
 ```xml
 <AllowedMethod>POST</AllowedMethod>
@@ -142,7 +160,7 @@ When using a presigned upload URL, the following permissions must be granted:
 <AllowedMethod>PUT</AllowedMethod>
 ```
 
-The final configuration should look something like the below:
+The final configuration should look something like this:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -165,13 +183,17 @@ The final configuration should look something like the below:
 </CORSConfiguration>
 ```
 
+Even with these CORS rules in place, you browser might still encounter HTTP status 403 responses with `AccessDenied` in the response body when it tries to `POST` to your bucket. In this case, within the "Permissions" tab of the [S3 Management Console](https://console.aws.amazon.com/s3/home), choose "Public access settings".
+
+It will list general *Public access settings for this bucket*, which can override the rules imposed by your CORS settings. Click on *edit* to manage these settings. Under *Manage public access control lists (ACLs) for this bucket*, make sure that *Block new public ACLs and uploading public objects (Recommended)* is unchecked, and *Save* these settings.
+
 In-depth documentation about CORS rules is available on the [AWS documentation site](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html).
 
-## POST Uploads
+## POST uploads
 
-uppy-server uses POST uploads by default, but you can also use them with your own endpoints. There are a few things to be aware of when doing so:
+Companion uses POST uploads by default, but you can also use them with your own endpoints. There are a few things to be aware of when doing so:
 
- - The AwsS3 plugin attempts to read the `<Location>` XML tag from POST upload responses. S3 does not respond with an XML document by default. When generating the form data for POST uploads, you must set the `success_action_status` field to `201`.
+ - The `@uppy/aws-s3` plugin attempts to read the `<Location>` XML tag from POST upload responses. S3 does not respond with an XML document by default. When generating the form data for POST uploads, you must set the `success_action_status` field to `201`.
    ```js
    // `s3` is an instance of the AWS JavaScript SDK's S3 client
    s3.createPresignedPost({
@@ -183,41 +205,41 @@ uppy-server uses POST uploads by default, but you can also use them with your ow
    })
    ```
 
-## S3 Alternatives
+## S3 alternatives
 
-Many other object storage providers have an identical API to S3, so you can use the AwsS3 plugin with them. To use them with Uppy Server, you can set the `UPPYSERVER_AWS_ENDPOINT` variable to the endpoint of your preferred service.
+Many other object storage providers have an identical API to S3, so you can use the `@uppy/aws-s3` plugin with them as well. To use them with Companion, you can set the `COMPANION_AWS_ENDPOINT` variable to the endpoint of your preferred service.
 
 ### DigitalOcean Spaces
 
 For example, with DigitalOcean Spaces, you could do something like this:
 
 ```bash
-export UPPYSERVER_AWS_ENDPOINT="https://{region}.digitaloceanspaces.com"
-export UPPYSERVER_AWS_BUCKET="my-space-name"
+export COMPANION_AWS_ENDPOINT="https://{region}.digitaloceanspaces.com"
+export COMPANION_AWS_BUCKET="my-space-name"
 ```
 
-The `{region}` string will be replaced by the contents of the `UPPYSERVER_AWS_REGION` environment variable.
+The `{region}` string will be replaced by the contents of the `COMPANION_AWS_REGION` environment variable.
 
 For a working example that you can run and play around with, see the [digitalocean-spaces](https://github.com/transloadit/uppy/tree/master/examples/digitalocean-spaces) folder in the Uppy repository.
 
 ### Google Cloud Storage
 
-For Google Cloud Storage, you need to take a few more steps. For the AwsS3 plugin to be able to upload to a GCS bucket, it needs the Interoperability setting enabled. You can enable the Interoperability setting and [generate interoperable storage access keys](https://cloud.google.com/storage/docs/migrating#keys) by going to [Google Cloud Storage](https://console.cloud.google.com/storage) » Settings » Interoperability. Then set the environment variables for Uppy Server like below:
+For Google Cloud Storage, you need to take a few more steps. For the `@uppy/aws-s3` plugin to be able to upload to a GCS bucket, it needs the Interoperability setting enabled. You can enable the Interoperability setting and [generate interoperable storage access keys](https://cloud.google.com/storage/docs/migrating#keys) by going to [Google Cloud Storage](https://console.cloud.google.com/storage) » Settings » Interoperability. Then set the environment variables for Companion like this:
 
 ```bash
-export UPPYSERVER_AWS_ENDPOINT="https://storage.googleapis.com"
-export UPPYSERVER_AWS_BUCKET="YOUR-GCS-BUCKET-NAME"
-export UPPYSERVER_AWS_KEY="GOOGxxxxxxxxx" # The Access Key
-export UPPYSERVER_AWS_SECRET="YOUR-GCS-SECRET" # The Secret
+export COMPANION_AWS_ENDPOINT="https://storage.googleapis.com"
+export COMPANION_AWS_BUCKET="YOUR-GCS-BUCKET-NAME"
+export COMPANION_AWS_KEY="GOOGxxxxxxxxx" # The Access Key
+export COMPANION_AWS_SECRET="YOUR-GCS-SECRET" # The Secret
 ```
 
 You do not need to configure the region with GCS.
 
-You also need to configure CORS differently. Unlike Amazon, Google does not offer a UI for CORS configurations. Instead an HTTP API must be used. If you haven't done this already, see [Configuring CORS on a Bucket](https://cloud.google.com/storage/docs/configuring-cors#Configuring-CORS-on-a-Bucket) in the GCS documentation, or follow the below steps to do it using Google's API playground.
+You also need to configure CORS differently. Unlike Amazon, Google does not offer a UI for CORS configurations. Instead, an HTTP API must be used. If you haven't done this already, see [Configuring CORS on a Bucket](https://cloud.google.com/storage/docs/configuring-cors#Configuring-CORS-on-a-Bucket) in the GCS documentation, or follow the steps below to do it using Google's API playground.
 
-GCS has multiple CORS formats, both XML and JSON. Unfortunately their XML format is different from Amazon's, so we can't simply use the one from the [S3 Bucket configuration](#S3-Bucket-configuration) section. Google appears to favour the JSON format, so we'll use that.
+GCS has multiple CORS formats, both XML and JSON. Unfortunately, their XML format is different from Amazon's, so we can't simply use the one from the [S3 Bucket configuration](#S3-Bucket-configuration) section. Google appears to favour the JSON format, so we will use that.
 
-#### JSON CORS Configuration
+#### JSON CORS configuration
 
 The JSON format consists of an array of CORS configuration objects. An example using POST policy document uploads is shown here:
 
@@ -252,7 +274,7 @@ Otherwise, you can manually apply it through the OAuth playground:
    1. Select the "Cloud Storage JSON API v1" » "devstorage.full_control" scope
    1. Press "Authorize APIs" and allow access
  1. Click "Step 3 - Configure request to API"
- 1. Configure it like below:
+ 1. Configure it as follows:
    - HTTP Method: PATCH
    - Request URI: `https://www.googleapis.com/storage/v1/b/YOUR_BUCKET_NAME`
    - Content-Type: application/json (should be the default)
@@ -302,7 +324,7 @@ See the [aws-presigned-url example in the uppy repository](https://github.com/tr
 
 ### Retrieving presign parameters of the uploaded file
 
-Once the file is uploaded, it's possible to retrieve the parameters that were
+Once the file is uploaded, it is possible to retrieve the parameters that were
 generated in `getUploadParameters(file)` via the `file.meta` field:
 
 ```js
@@ -311,4 +333,4 @@ uppy.on('upload-success', (file, data) => {
 })
 ```
 
-[uppy-server docs]: /docs/server/index.html
+[companion docs]: /docs/companion

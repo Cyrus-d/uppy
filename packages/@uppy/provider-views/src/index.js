@@ -16,6 +16,14 @@ function findIndex (array, predicate) {
   return -1
 }
 
+// location.origin does not exist in IE
+function getOrigin () {
+  if ('origin' in location) {
+    return location.origin // eslint-disable-line compat/compat
+  }
+  return `${location.protocol}//${location.hostname}${location.port ? `:${location.port}` : ''}`
+}
+
 class CloseWrapper extends Component {
   componentWillUnmount () {
     this.props.onUnmount()
@@ -27,42 +35,17 @@ class CloseWrapper extends Component {
 }
 
 /**
- * Class to easily generate generic views for plugins
- *
- *
- * This class expects the plugin instance using it to have the following
- * accessor methods.
- * Each method takes the item whose property is to be accessed
- * as a param
- *
- * isFolder
- *    @return {Boolean} for if the item is a folder or not
- * getItemData
- *    @return {Object} that is format ready for uppy upload/download
- * getItemIcon
- *    @return {Object} html instance of the item's icon
- * getItemSubList
- *    @return {Array} sub-items in the item. e.g a folder may contain sub-items
- * getItemName
- *    @return {String} display friendly name of the item
- * getMimeType
- *    @return {String} mime type of the item
- * getItemId
- *    @return {String} unique id of the item
- * getItemRequestPath
- *    @return {String} unique request path of the item when making calls to uppy server
- * getItemModifiedDate
- *    @return {object} or {String} date of when last the item was modified
- * getItemThumbnailUrl
- *    @return {String}
+ * Class to easily generate generic views for Provider plugins
  */
 module.exports = class ProviderView {
+  static VERSION = require('../package.json').version
+
   /**
    * @param {object} instance of the plugin
    */
   constructor (plugin, opts) {
     this.plugin = plugin
-    this.Provider = plugin[plugin.id]
+    this.provider = opts.provider
 
     // set default options
     const defaultOptions = {
@@ -73,7 +56,7 @@ module.exports = class ProviderView {
     }
 
     // merge default options with the ones set by user
-    this.opts = Object.assign({}, defaultOptions, opts)
+    this.opts = { ...defaultOptions, ...opts }
 
     // Logic
     this.addFile = this.addFile.bind(this)
@@ -83,9 +66,8 @@ module.exports = class ProviderView {
     this.getFolder = this.getFolder.bind(this)
     this.getNextFolder = this.getNextFolder.bind(this)
     this.logout = this.logout.bind(this)
-    this.checkAuth = this.checkAuth.bind(this)
+    this.preFirstRender = this.preFirstRender.bind(this)
     this.handleAuth = this.handleAuth.bind(this)
-    this.handleDemoAuth = this.handleDemoAuth.bind(this)
     this.sortByTitle = this.sortByTitle.bind(this)
     this.sortByDate = this.sortByDate.bind(this)
     this.isActiveRow = this.isActiveRow.bind(this)
@@ -108,8 +90,9 @@ module.exports = class ProviderView {
   }
 
   _updateFilesAndFolders (res, files, folders) {
-    this.plugin.getItemSubList(res).forEach((item) => {
-      if (this.plugin.isFolder(item)) {
+    this.nextPagePath = res.nextPagePath
+    res.items.forEach((item) => {
+      if (item.isFolder) {
         folders.push(item)
       } else {
         files.push(item)
@@ -119,17 +102,13 @@ module.exports = class ProviderView {
     this.plugin.setPluginState({ folders, files })
   }
 
-  checkAuth () {
-    this.plugin.setPluginState({ checkAuthInProgress: true })
-    this.Provider.checkAuth()
-      .then((authenticated) => {
-        this.plugin.setPluginState({ checkAuthInProgress: false })
-        this.plugin.onAuth(authenticated)
-      })
-      .catch((err) => {
-        this.plugin.setPluginState({ checkAuthInProgress: false })
-        this.handleError(err)
-      })
+  /**
+   * Called only the first time the provider view is rendered.
+   * Kind of like an init function.
+   */
+  preFirstRender () {
+    this.plugin.setPluginState({ didFirstRender: true })
+    this.plugin.onFirstRender()
   }
 
   /**
@@ -139,7 +118,7 @@ module.exports = class ProviderView {
    */
   getFolder (id, name) {
     return this._loaderWrapper(
-      this.Provider.list(id),
+      this.provider.list(id),
       (res) => {
         let folders = []
         let files = []
@@ -151,10 +130,10 @@ module.exports = class ProviderView {
         if (index !== -1) {
           updatedDirectories = state.directories.slice(0, index + 1)
         } else {
-          updatedDirectories = state.directories.concat([{id, title: name || this.plugin.getItemName(res)}])
+          updatedDirectories = state.directories.concat([{ id, title: name }])
         }
 
-        this.username = this.username ? this.username : this.plugin.getUsername(res)
+        this.username = this.username ? this.username : res.username
         this._updateFilesAndFolders(res, files, folders)
         this.plugin.setPluginState({ directories: updatedDirectories })
       },
@@ -167,8 +146,7 @@ module.exports = class ProviderView {
    * @param  {String} title Folder title
    */
   getNextFolder (folder) {
-    let id = this.plugin.getItemRequestPath(folder)
-    this.getFolder(id, this.plugin.getItemName(folder))
+    this.getFolder(folder.requestPath, folder.name)
     this.lastCheckbox = undefined
   }
 
@@ -176,27 +154,27 @@ module.exports = class ProviderView {
     const tagFile = {
       id: this.providerFileToId(file),
       source: this.plugin.id,
-      data: this.plugin.getItemData(file),
-      name: this.plugin.getItemName(file) || this.plugin.getItemId(file),
-      type: this.plugin.getMimeType(file),
+      data: file,
+      name: file.name || file.id,
+      type: file.mimeType,
       isRemote: true,
       body: {
-        fileId: this.plugin.getItemId(file)
+        fileId: file.id
       },
       remote: {
-        serverUrl: this.plugin.opts.serverUrl,
-        url: `${this.Provider.fileUrl(this.plugin.getItemRequestPath(file))}`,
+        companionUrl: this.plugin.opts.companionUrl,
+        url: `${this.provider.fileUrl(file.requestPath)}`,
         body: {
-          fileId: this.plugin.getItemId(file)
+          fileId: file.id
         },
-        providerOptions: this.Provider.opts
+        providerOptions: this.provider.opts
       }
     }
 
     const fileType = getFileType(tagFile)
     // TODO Should we just always use the thumbnail URL if it exists?
     if (fileType && isPreviewSupported(fileType)) {
-      tagFile.preview = this.plugin.getItemThumbnailUrl(file)
+      tagFile.preview = file.thumbnail
     }
     this.plugin.uppy.log('Adding remote file')
     try {
@@ -217,7 +195,7 @@ module.exports = class ProviderView {
    * Removes session token on client side.
    */
   logout () {
-    this.Provider.logout(location.href)
+    this.provider.logout(location.href)
       .then((res) => {
         if (res.ok) {
           const newState = {
@@ -249,30 +227,30 @@ module.exports = class ProviderView {
 
   filterItems (items) {
     const state = this.plugin.getPluginState()
-    if (state.filterInput === '') {
+    if (!state.filterInput || state.filterInput === '') {
       return items
     }
     return items.filter((folder) => {
-      return this.plugin.getItemName(folder).toLowerCase().indexOf(state.filterInput.toLowerCase()) !== -1
+      return folder.name.toLowerCase().indexOf(state.filterInput.toLowerCase()) !== -1
     })
   }
 
   sortByTitle () {
     const state = Object.assign({}, this.plugin.getPluginState())
-    const {files, folders, sorting} = state
+    const { files, folders, sorting } = state
 
     let sortedFiles = files.sort((fileA, fileB) => {
       if (sorting === 'titleDescending') {
-        return this.plugin.getItemName(fileB).localeCompare(this.plugin.getItemName(fileA))
+        return fileB.name.localeCompare(fileA.name)
       }
-      return this.plugin.getItemName(fileA).localeCompare(this.plugin.getItemName(fileB))
+      return fileA.name.localeCompare(fileB.name)
     })
 
     let sortedFolders = folders.sort((folderA, folderB) => {
       if (sorting === 'titleDescending') {
-        return this.plugin.getItemName(folderB).localeCompare(this.plugin.getItemName(folderA))
+        return folderB.name.localeCompare(folderA.name)
       }
-      return this.plugin.getItemName(folderA).localeCompare(this.plugin.getItemName(folderB))
+      return folderA.name.localeCompare(folderB.name)
     })
 
     this.plugin.setPluginState(Object.assign({}, state, {
@@ -284,11 +262,11 @@ module.exports = class ProviderView {
 
   sortByDate () {
     const state = Object.assign({}, this.plugin.getPluginState())
-    const {files, folders, sorting} = state
+    const { files, folders, sorting } = state
 
     let sortedFiles = files.sort((fileA, fileB) => {
-      let a = new Date(this.plugin.getItemModifiedDate(fileA))
-      let b = new Date(this.plugin.getItemModifiedDate(fileB))
+      let a = new Date(fileA.modifiedDate)
+      let b = new Date(fileB.modifiedDate)
 
       if (sorting === 'dateDescending') {
         return a > b ? -1 : a < b ? 1 : 0
@@ -297,8 +275,8 @@ module.exports = class ProviderView {
     })
 
     let sortedFolders = folders.sort((folderA, folderB) => {
-      let a = new Date(this.plugin.getItemModifiedDate(folderA))
-      let b = new Date(this.plugin.getItemModifiedDate(folderB))
+      let a = new Date(folderA.modifiedDate)
+      let b = new Date(folderB.modifiedDate)
 
       if (sorting === 'dateDescending') {
         return a > b ? -1 : a < b ? 1 : 0
@@ -316,7 +294,7 @@ module.exports = class ProviderView {
 
   sortBySize () {
     const state = Object.assign({}, this.plugin.getPluginState())
-    const {files, sorting} = state
+    const { files, sorting } = state
 
     // check that plugin supports file sizes
     if (!files.length || !this.plugin.getItemData(files[0]).size) {
@@ -324,8 +302,8 @@ module.exports = class ProviderView {
     }
 
     let sortedFiles = files.sort((fileA, fileB) => {
-      let a = this.plugin.getItemData(fileA).size
-      let b = this.plugin.getItemData(fileB).size
+      let a = fileA.size
+      let b = fileB.size
 
       if (sorting === 'sizeDescending') {
         return a > b ? -1 : a < b ? 1 : 0
@@ -361,24 +339,24 @@ module.exports = class ProviderView {
     if (folderId in folders && folders[folderId].loading) {
       return
     }
-    folders[folderId] = {loading: true, files: []}
-    this.plugin.setPluginState({selectedFolders: folders})
-    return this.Provider.list(this.plugin.getItemRequestPath(folder)).then((res) => {
+    folders[folderId] = { loading: true, files: [] }
+    this.plugin.setPluginState({ selectedFolders: folders })
+    return this.provider.list(folder.requestPath).then((res) => {
       let files = []
-      this.plugin.getItemSubList(res).forEach((item) => {
-        if (!this.plugin.isFolder(item)) {
+      res.items.forEach((item) => {
+        if (!item.isFolder) {
           this.addFile(item)
           files.push(this.providerFileToId(item))
         }
       })
       state = this.plugin.getPluginState()
-      state.selectedFolders[folderId] = {loading: false, files: files}
-      this.plugin.setPluginState({selectedFolders: folders})
+      state.selectedFolders[folderId] = { loading: false, files: files }
+      this.plugin.setPluginState({ selectedFolders: folders })
       const dashboard = this.plugin.uppy.getPlugin('Dashboard')
       let message
       if (files.length) {
         message = dashboard.i18n('folderAdded', {
-          smart_count: files.length, folder: this.plugin.getItemName(folder)
+          smart_count: files.length, folder: folder.name
         })
       } else {
         message = dashboard.i18n('emptyFolderAdded')
@@ -387,7 +365,7 @@ module.exports = class ProviderView {
     }).catch((e) => {
       state = this.plugin.getPluginState()
       delete state.selectedFolders[folderId]
-      this.plugin.setPluginState({selectedFolders: state.selectedFolders})
+      this.plugin.setPluginState({ selectedFolders: state.selectedFolders })
       this.handleError(e)
     })
   }
@@ -435,52 +413,73 @@ module.exports = class ProviderView {
 
   providerFileToId (file) {
     return generateFileID({
-      data: this.plugin.getItemData(file),
-      name: this.plugin.getItemName(file) || this.plugin.getItemId(file),
-      type: this.plugin.getMimeType(file)
-    })
-  }
-
-  handleDemoAuth () {
-    const state = this.plugin.getPluginState()
-    this.plugin.setPluginState({}, state, {
-      authenticated: true
+      data: file,
+      name: file.name || file.id,
+      type: file.mimeType
     })
   }
 
   handleAuth () {
-    const authState = btoa(JSON.stringify({ origin: location.origin }))
-    const link = `${this.Provider.authUrl()}?state=${authState}`
+    const authState = btoa(JSON.stringify({ origin: getOrigin() }))
+    // @todo remove this hardcoded version
+    const clientVersion = 'companion-client:1.0.2'
+    const link = `${this.provider.authUrl()}?state=${authState}&uppyVersions=${clientVersion}`
 
     const authWindow = window.open(link, '_blank')
-    const noProtocol = (url) => url.replace(/^(https?:|)\/\//, '')
     const handleToken = (e) => {
-      const allowedOrigin = new RegExp(noProtocol(this.plugin.opts.serverPattern))
-      if (!allowedOrigin.test(noProtocol(e.origin)) || e.source !== authWindow) {
-        this.plugin.uppy.log(`rejecting event from ${e.origin} vs allowed pattern ${this.plugin.opts.serverPattern}`)
+      if (!this._isOriginAllowed(e.origin, this.plugin.opts.companionAllowedHosts) || e.source !== authWindow) {
+        this.plugin.uppy.log(`rejecting event from ${e.origin} vs allowed pattern ${this.plugin.opts.companionAllowedHosts}`)
         return
       }
+
+      // Check if it's a string before doing the JSON.parse to maintain support
+      // for older Companion versions that used object references
+      const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data
+
+      if (!data.token) {
+        this.plugin.uppy.log('did not receive token from auth window')
+        return
+      }
+
       authWindow.close()
       window.removeEventListener('message', handleToken)
-      this.Provider.setAuthToken(e.data.token)
-      this._loaderWrapper(this.Provider.checkAuth(), this.plugin.onAuth, this.handleError)
+      this.provider.setAuthToken(data.token)
+      this.preFirstRender()
     }
     window.addEventListener('message', handleToken)
   }
 
+  _isOriginAllowed (origin, allowedOrigin) {
+    const getRegex = (value) => {
+      if (typeof value === 'string') {
+        return new RegExp(`^${value}$`)
+      } else if (value instanceof RegExp) {
+        return value
+      }
+    }
+
+    const patterns = Array.isArray(allowedOrigin) ? allowedOrigin.map(getRegex) : [getRegex(allowedOrigin)]
+    return patterns
+      .filter((pattern) => pattern != null) // loose comparison to catch undefined
+      .some((pattern) => pattern.test(origin) || pattern.test(`${origin}/`)) // allowing for trailing '/'
+  }
+
   handleError (error) {
     const uppy = this.plugin.uppy
-    const message = uppy.i18n('uppyServerError')
     uppy.log(error.toString())
-    uppy.info({message: message, details: error.toString()}, 'error', 5000)
+    if (error.isAuthError) {
+      return
+    }
+    const message = uppy.i18n('companionError')
+    uppy.info({ message: message, details: error.toString() }, 'error', 5000)
   }
 
   handleScroll (e) {
     const scrollPos = e.target.scrollHeight - (e.target.scrollTop + e.target.offsetHeight)
-    const path = this.plugin.getNextPagePath ? this.plugin.getNextPagePath() : null
+    const path = this.nextPagePath || null
 
     if (scrollPos < 50 && path && !this._isHandlingScroll) {
-      this.Provider.list(path)
+      this.provider.list(path)
         .then((res) => {
           const { files, folders } = this.plugin.getPluginState()
           this._updateFilesAndFolders(res, files, folders)
@@ -494,7 +493,7 @@ module.exports = class ProviderView {
   donePicking () {
     const { currentSelection } = this.plugin.getPluginState()
     const promises = currentSelection.map((file) => {
-      if (this.plugin.isFolder(file)) {
+      if (file.isFolder) {
         return this.addFolder(file)
       } else {
         return this.addFile(file)
@@ -503,9 +502,6 @@ module.exports = class ProviderView {
 
     this._loaderWrapper(Promise.all(promises), () => {
       this.clearSelection()
-
-      const dashboard = this.plugin.uppy.getPlugin('Dashboard')
-      if (dashboard) dashboard.hideAllPanels()
     }, () => {})
   }
 
@@ -523,18 +519,28 @@ module.exports = class ProviderView {
   // displays loader view while asynchronous request is being made.
   _loaderWrapper (promise, then, catch_) {
     promise
-      .then(then).catch(catch_)
-      .then(() => this.plugin.setPluginState({ loading: false })) // always called.
+      .then((result) => {
+        this.plugin.setPluginState({ loading: false })
+        then(result)
+      }).catch((err) => {
+        this.plugin.setPluginState({ loading: false })
+        catch_(err)
+      })
     this.plugin.setPluginState({ loading: true })
   }
 
   render (state) {
-    const { authenticated, checkAuthInProgress, loading } = this.plugin.getPluginState()
+    const { authenticated, didFirstRender } = this.plugin.getPluginState()
+    if (!didFirstRender) {
+      this.preFirstRender()
+    }
 
-    if (loading) {
+    // reload pluginState for "loading" attribute because it might
+    // have changed above.
+    if (this.plugin.getPluginState().loading) {
       return (
         <CloseWrapper onUnmount={this.clearSelection}>
-          <LoaderView />
+          <LoaderView i18n={this.plugin.uppy.i18n} />
         </CloseWrapper>
       )
     }
@@ -545,11 +551,9 @@ module.exports = class ProviderView {
           <AuthView
             pluginName={this.plugin.title}
             pluginIcon={this.plugin.icon}
-            demo={this.plugin.opts.demo}
-            checkAuth={this.checkAuth}
             handleAuth={this.handleAuth}
-            handleDemoAuth={this.handleDemoAuth}
-            checkAuthInProgress={checkAuthInProgress} />
+            i18n={this.plugin.uppy.i18n}
+            i18nArray={this.plugin.uppy.i18nArray} />
         </CloseWrapper>
       )
     }
@@ -564,13 +568,9 @@ module.exports = class ProviderView {
       sortByTitle: this.sortByTitle,
       sortByDate: this.sortByDate,
       logout: this.logout,
-      demo: this.plugin.opts.demo,
       isActiveRow: this.isActiveRow,
       isChecked: this.isChecked,
       toggleCheckbox: this.toggleCheckbox,
-      getItemId: this.plugin.getItemId,
-      getItemName: this.plugin.getItemName,
-      getItemIcon: this.plugin.getItemIcon,
       handleScroll: this.handleScroll,
       done: this.donePicking,
       cancel: this.cancelPicking,

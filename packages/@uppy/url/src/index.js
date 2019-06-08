@@ -1,67 +1,59 @@
 const { Plugin } = require('@uppy/core')
 const Translator = require('@uppy/utils/lib/Translator')
 const { h } = require('preact')
-const { RequestClient } = require('@uppy/server-utils')
+const { RequestClient } = require('@uppy/companion-client')
 const UrlUI = require('./UrlUI.js')
-const toArray = require('@uppy/utils/lib/toArray')
+const forEachDroppedOrPastedUrl = require('./utils/forEachDroppedOrPastedUrl')
 
 /**
  * Url
  *
  */
 module.exports = class Url extends Plugin {
+  static VERSION = require('../package.json').version
+
   constructor (uppy, opts) {
     super(uppy, opts)
     this.id = this.opts.id || 'Url'
-    this.title = 'Link'
+    this.title = this.opts.title || 'Link'
     this.type = 'acquirer'
-    this.icon = () => <svg aria-hidden="true" class="UppyIcon UppyModalTab-icon" width="64" height="64" viewBox="0 0 64 64">
-      <circle cx="32" cy="32" r="31" />
-      <g fill-rule="nonzero" fill="#FFF">
-        <path d="M25.774 47.357a4.077 4.077 0 0 1-5.76 0L16.9 44.24a4.076 4.076 0 0 1 0-5.758l5.12-5.12-1.817-1.818-5.12 5.122a6.651 6.651 0 0 0 0 9.392l3.113 3.116a6.626 6.626 0 0 0 4.699 1.943c1.7 0 3.401-.649 4.697-1.943l10.241-10.243a6.591 6.591 0 0 0 1.947-4.696 6.599 6.599 0 0 0-1.947-4.696l-3.116-3.114-1.817 1.817 3.116 3.114a4.045 4.045 0 0 1 1.194 2.88 4.045 4.045 0 0 1-1.194 2.878L25.774 47.357z" />
-        <path d="M46.216 14.926a6.597 6.597 0 0 0-4.696-1.946h-.001a6.599 6.599 0 0 0-4.696 1.945L26.582 25.167a6.595 6.595 0 0 0-1.947 4.697 6.599 6.599 0 0 0 1.946 4.698l3.114 3.114 1.818-1.816-3.114-3.114a4.05 4.05 0 0 1-1.194-2.882c0-1.086.424-2.108 1.194-2.878L38.64 16.744a4.042 4.042 0 0 1 2.88-1.194c1.089 0 2.11.425 2.88 1.194l3.114 3.114a4.076 4.076 0 0 1 0 5.758l-5.12 5.12 1.818 1.817 5.12-5.122a6.649 6.649 0 0 0 0-9.393l-3.113-3.114-.003.002z" />
-      </g>
+    this.icon = () => <svg aria-hidden="true" width="23" height="23" viewBox="0 0 23 23">
+      <path d="M20.485 11.236l-2.748 2.737c-.184.182-.367.365-.642.547-1.007.73-2.107 1.095-3.298 1.095-1.65 0-3.298-.73-4.398-2.19-.275-.365-.183-1.003.183-1.277.367-.273 1.008-.182 1.283.183 1.191 1.642 3.482 1.915 5.13.73a.714.714 0 0 0 .367-.365l2.75-2.737c1.373-1.46 1.373-3.74-.093-5.108a3.72 3.72 0 0 0-5.13 0L12.33 6.4a.888.888 0 0 1-1.283 0 .88.88 0 0 1 0-1.277l1.558-1.55a5.38 5.38 0 0 1 7.605 0c2.29 2.006 2.382 5.564.274 7.662zm-8.979 6.294L9.95 19.081a3.72 3.72 0 0 1-5.13 0c-1.467-1.368-1.467-3.74-.093-5.108l2.75-2.737.366-.365c.824-.547 1.74-.82 2.748-.73 1.008.183 1.833.639 2.382 1.46.275.365.917.456 1.283.182.367-.273.458-.912.183-1.277-.916-1.186-2.199-1.915-3.573-2.098-1.374-.273-2.84.091-4.031 1.004l-.55.547-2.749 2.737c-2.107 2.189-2.015 5.655.092 7.753C4.727 21.453 6.101 22 7.475 22c1.374 0 2.749-.547 3.848-1.55l1.558-1.551a.88.88 0 0 0 0-1.278c-.367-.364-1.008-.456-1.375-.09z" fill="#FF814F" fill-rule="nonzero" />
     </svg>
 
     // Set default options and locale
-    const defaultLocale = {
+    this.defaultLocale = {
       strings: {
         import: 'Import',
         enterUrlToImport: 'Enter URL to import a file',
-        failedToFetch: 'Uppy Server failed to fetch this URL, please make sure it’s correct',
+        failedToFetch: 'Companion failed to fetch this URL, please make sure it’s correct',
         enterCorrectUrl: 'Incorrect URL: Please make sure you are entering a direct link to a file'
       }
     }
 
-    const defaultOptions = {
-      locale: defaultLocale
-    }
+    const defaultOptions = {}
 
     this.opts = Object.assign({}, defaultOptions, opts)
 
-    this.locale = Object.assign({}, defaultLocale, this.opts.locale)
-    this.locale.strings = Object.assign({}, defaultLocale.strings, this.opts.locale.strings)
-
-    this.translator = new Translator({locale: this.locale})
+    // i18n
+    this.translator = new Translator([ this.defaultLocale, this.uppy.locale, this.opts.locale ])
     this.i18n = this.translator.translate.bind(this.translator)
+    this.i18nArray = this.translator.translateArray.bind(this.translator)
 
-    this.hostname = this.opts.serverUrl
+    this.hostname = this.opts.companionUrl
 
     if (!this.hostname) {
-      throw new Error('Uppy Server hostname is required, please consult https://uppy.io/docs/server')
+      throw new Error('Companion hostname is required, please consult https://uppy.io/docs/companion')
     }
 
     // Bind all event handlers for referencability
     this.getMeta = this.getMeta.bind(this)
     this.addFile = this.addFile.bind(this)
-    this.handleDrop = this.handleDrop.bind(this)
-    this.handleDragOver = this.handleDragOver.bind(this)
-    this.handleDragLeave = this.handleDragLeave.bind(this)
-
-    this.handlePaste = this.handlePaste.bind(this)
+    this.handleRootDrop = this.handleRootDrop.bind(this)
+    this.handleRootPaste = this.handleRootPaste.bind(this)
 
     this.client = new RequestClient(uppy, {
-      serverUrl: this.opts.serverUrl,
+      companionUrl: this.opts.companionUrl,
       serverHeaders: this.opts.serverHeaders
     })
   }
@@ -125,7 +117,7 @@ module.exports = class Url extends Plugin {
             url: url
           },
           remote: {
-            serverUrl: this.opts.serverUrl,
+            companionUrl: this.opts.companionUrl,
             url: `${this.hostname}/url/get`,
             body: {
               fileId: url,
@@ -145,8 +137,11 @@ module.exports = class Url extends Plugin {
         }
       })
       .then(() => {
-        const dashboard = this.uppy.getPlugin('Dashboard')
-        if (dashboard) dashboard.hideAllPanels()
+        // Close the Dashboard panel if plugin is installed
+        // into Dashboard (could be other parent UI plugin)
+        // if (this.parent && this.parent.hideAllPanels) {
+        //   this.parent.hideAllPanels()
+        // }
       })
       .catch((err) => {
         this.uppy.log(err)
@@ -157,50 +152,18 @@ module.exports = class Url extends Plugin {
       })
   }
 
-  handleDrop (e) {
-    e.preventDefault()
-    if (e.dataTransfer.items) {
-      const items = toArray(e.dataTransfer.items)
-      items.forEach((item) => {
-        if (item.kind === 'string' && item.type === 'text/uri-list') {
-          item.getAsString((url) => {
-            this.uppy.log(`[URL] Adding file from dropped url: ${url}`)
-            this.addFile(url)
-          })
-        }
-      })
-    }
+  handleRootDrop (e) {
+    forEachDroppedOrPastedUrl(e.dataTransfer, 'drop', (url) => {
+      this.uppy.log(`[URL] Adding file from dropped url: ${url}`)
+      this.addFile(url)
+    })
   }
 
-  handleDragOver (e) {
-    e.preventDefault()
-    this.el.classList.add('drag')
-  }
-
-  handleDragLeave (e) {
-    e.preventDefault()
-    this.el.classList.remove('drag')
-  }
-
-  handlePaste (e) {
-    if (e.clipboardData.items) {
-      const items = toArray(e.clipboardData.items)
-
-      // When a file is pasted, it appears as two items: file name string, then
-      // the file itself; Url then treats file name string as URL, which is wrong.
-      // This makes sure Url ignores paste event if it contains an actual file
-      const hasFiles = items.filter(item => item.kind === 'file').length > 0
-      if (hasFiles) return
-
-      items.forEach((item) => {
-        if (item.kind === 'string' && item.type === 'text/plain') {
-          item.getAsString((url) => {
-            this.uppy.log(`[URL] Adding file from pasted url: ${url}`)
-            this.addFile(url)
-          })
-        }
-      })
-    }
+  handleRootPaste (e) {
+    forEachDroppedOrPastedUrl(e.clipboardData, 'paste', (url) => {
+      this.uppy.log(`[URL] Adding file from pasted url: ${url}`)
+      this.addFile(url)
+    })
   }
 
   render (state) {
@@ -214,19 +177,9 @@ module.exports = class Url extends Plugin {
     if (target) {
       this.mount(target, this)
     }
-
-    this.el.addEventListener('drop', this.handleDrop)
-    this.el.addEventListener('dragover', this.handleDragOver)
-    this.el.addEventListener('dragleave', this.handleDragLeave)
-    this.el.addEventListener('paste', this.handlePaste)
   }
 
   uninstall () {
-    this.el.removeEventListener('drop', this.handleDrop)
-    this.el.removeEventListener('dragover', this.handleDragOver)
-    this.el.removeEventListener('dragleave', this.handleDragLeave)
-    this.el.removeEventListener('paste', this.handlePaste)
-
     this.unmount()
   }
 }

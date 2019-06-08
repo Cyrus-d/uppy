@@ -2,7 +2,7 @@
 exports.Core = require('@uppy/core')
 
 // Utilities
-exports.server = require('@uppy/server-utils')
+exports.server = require('@uppy/companion-client')
 exports.views = {
   ProviderView: require('@uppy/provider-views')
 }
@@ -38,3 +38,5 @@ exports.Form = require('@uppy/form')
 exports.GoldenRetriever = require('@uppy/golden-retriever')
 exports.ReduxDevTools = require('@uppy/redux-dev-tools')
 exports.ThumbnailGenerator = require('@uppy/thumbnail-generator')
+
+exports.locales = {}

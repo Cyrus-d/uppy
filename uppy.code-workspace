@@ -5,13 +5,16 @@
 		}
 	],
 	"settings": {
-		"files.exclude": {
+		"workbench.colorCustomizations": {
+			"titleBar.activeForeground": "#ffffff",
+			"titleBar.activeBackground": "#ff009d",
+		},
+		"search.exclude": {
 			"website/public/": true,
 			"node_modules/": true,
 			"website/node_modules/": true,
 			"dist/": true,
 			"lib/": true,
-			"assets/": true,
 			"package-lock.json": true,
 			"website/package-lock.json": true,
 			"yarn-error.log": true,

@@ -3,6 +3,7 @@ title: Dashboard
 layout: example
 type: examples
 order: 0
+category: 'Examples'
 ---
 
 {% blockquote %}
@@ -14,9 +15,11 @@ Dashboard is the full-featured UI for Uppy that shows nice file previews and up
 
 <hr />
 
-<p id="console-wrapper">Console output (latest logs are at the top): <br /></p>
+<p id="console-wrapper">Console output: <br /></p>
 
 <p>On this page we're using the following JavaScript snippet:</p>
+
+<blockquote>Note: in this snippet we've omitted the code to toggle options using checkboxes. The behavior of this code may be different from the above example depending on which options you've selected.</blockquote>
 
 {% codeblock lang:js %}
 const Uppy = require('@uppy/core')
@@ -51,9 +54,9 @@ const uppy = Uppy({
   ],
   browserBackButtonClose: true
 })
-.use(GoogleDrive, { target: Dashboard, serverUrl: 'https://server.uppy.io' })
-.use(Dropbox, { target: Dashboard, serverUrl: 'https://server.uppy.io' })
-.use(Instagram, { target: Dashboard, serverUrl: 'https://server.uppy.io' })
+.use(GoogleDrive, { target: Dashboard, companionUrl: 'https://companion.uppy.io' })
+.use(Dropbox, { target: Dashboard, companionUrl: 'https://companion.uppy.io' })
+.use(Instagram, { target: Dashboard, companionUrl: 'https://companion.uppy.io' })
 .use(Webcam, { target: Dashboard })
 .use(Tus, { endpoint: 'https://master.tus.io/files/' })
 

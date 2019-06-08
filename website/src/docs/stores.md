@@ -1,8 +1,9 @@
 ---
 type: docs
-order: 3
+order: 5
 title: "Custom Stores"
 permalink: docs/stores/
+category: 'Docs'
 ---
 
 > This section concerns storing the internal application state, if you work with React/Redux, for example. If none of this rings a bell, you can safely skip this section.
@@ -13,8 +14,8 @@ If your app uses a state management library such as [Redux](https://redux.js.org
 
 Uppy comes with two state management solutions (stores):
 
- - `DefaultStore`, a simple object-based store.
- - `ReduxStore`, a store that uses a key in a Redux store.
+ - `@uppy/store-default`, a simple object-based store.
+ - `@uppy/store-redux`, a store that uses a key in a Redux store.
 
 There are also some third-party stores:
 
@@ -141,4 +142,4 @@ function defaultStore () {
 
 A pattern like this, where users can pass options via a function call if necessary, is recommended.
 
-See the [./src/store](https://github.com/transloadit/uppy/tree/master/src/store) folder in the repository for more inspiration.
+See the [@uppy/store-default](https://github.com/transloadit/uppy/tree/master/packages/%40uppy/store-default) package for more inspiration.

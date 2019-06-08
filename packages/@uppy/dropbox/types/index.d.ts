@@ -1,15 +1,21 @@
-import { Plugin, PluginOptions, Uppy } from '@uppy/core';
+import Uppy = require('@uppy/core');
+import CompanionClient = require('@uppy/companion-client');
 
-export interface DropboxOptions extends PluginOptions {
-  serverUrl: string;
+declare module Dropbox {
+  interface DropboxOptions extends Uppy.PluginOptions, CompanionClient.ProviderOptions {
+    companionUrl: string;
+    companionAllowedHosts: string | RegExp | Array<string | RegExp>;
+  }
 }
 
-export default class Dropbox extends Plugin {
-  constructor(uppy: Uppy, opts: Partial<DropboxOptions>);
+declare class Dropbox extends Uppy.Plugin {
+  constructor(uppy: Uppy.Uppy, opts: Partial<Dropbox.DropboxOptions>);
 }
+
+export = Dropbox;
 
 declare module '@uppy/core' {
   export interface Uppy {
-    use(pluginClass: typeof Dropbox, opts: Partial<DropboxOptions>): Uppy;
+    use(pluginClass: typeof Dropbox, opts: Partial<Dropbox.DropboxOptions>): Uppy.Uppy;
   }
 }

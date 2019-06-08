@@ -1,7 +1,7 @@
 const { Plugin } = require('@uppy/core')
 const cuid = require('cuid')
 const Translator = require('@uppy/utils/lib/Translator')
-const { Provider, Socket } = require('@uppy/server-utils')
+const { Provider, RequestClient, Socket } = require('@uppy/companion-client')
 const emitSocketProgress = require('@uppy/utils/lib/emitSocketProgress')
 const getSocketHost = require('@uppy/utils/lib/getSocketHost')
 const settle = require('@uppy/utils/lib/settle')
@@ -22,13 +22,15 @@ function buildResponseError (xhr, error) {
 }
 
 module.exports = class XHRUpload extends Plugin {
+  static VERSION = require('../package.json').version
+
   constructor (uppy, opts) {
     super(uppy, opts)
     this.type = 'uploader'
     this.id = 'XHRUpload'
     this.title = 'XHRUpload'
 
-    const defaultLocale = {
+    this.defaultLocale = {
       strings: {
         timedOut: 'Upload stalled for %{seconds} seconds, aborting.'
       }
@@ -43,10 +45,10 @@ module.exports = class XHRUpload extends Plugin {
       responseUrlFieldName: 'url',
       bundle: false,
       headers: {},
-      locale: defaultLocale,
       timeout: 30 * 1000,
       limit: 0,
       withCredentials: false,
+      responseType: '',
       /**
        * @typedef respObj
        * @property {string} responseText
@@ -74,17 +76,24 @@ module.exports = class XHRUpload extends Plugin {
        */
       getResponseError (responseText, response) {
         return new Error('Upload error')
+      },
+      /**
+       * @param {number} status the response status code
+       * @param {string} responseText the response body string
+       * @param {XMLHttpRequest | respObj} response the response object (XHR or similar)
+       */
+      validateStatus (status, responseText, response) {
+        return status >= 200 && status < 300
       }
     }
 
     // Merge default options with the ones set by user
     this.opts = Object.assign({}, defaultOptions, opts)
-    this.locale = Object.assign({}, defaultLocale, this.opts.locale)
-    this.locale.strings = Object.assign({}, defaultLocale.strings, this.opts.locale.strings)
 
     // i18n
-    this.translator = new Translator({ locale: this.locale })
+    this.translator = new Translator([ this.defaultLocale, this.uppy.locale, this.opts.locale ])
     this.i18n = this.translator.translate.bind(this.translator)
+    this.i18nArray = this.translator.translateArray.bind(this.translator)
 
     this.handleUpload = this.handleUpload.bind(this)
 
@@ -173,7 +182,11 @@ module.exports = class XHRUpload extends Plugin {
       formPost.append(item, file.meta[item])
     })
 
-    formPost.append(opts.fieldName, file.data)
+    if (file.name) {
+      formPost.append(opts.fieldName, file.data, file.name)
+    } else {
+      formPost.append(opts.fieldName, file.data)
+    }
 
     return formPost
   }
@@ -198,16 +211,17 @@ module.exports = class XHRUpload extends Plugin {
       })
 
       const xhr = new XMLHttpRequest()
+
       const id = cuid()
 
       xhr.upload.addEventListener('loadstart', (ev) => {
         this.uppy.log(`[XHRUpload] ${id} started`)
-        // Begin checking for timeouts when loading starts.
-        timer.progress()
       })
 
       xhr.upload.addEventListener('progress', (ev) => {
         this.uppy.log(`[XHRUpload] ${id} progress: ${ev.loaded} / ${ev.total}`)
+        // Begin checking for timeouts when progress starts, instead of loading,
+        // to avoid timing out requests on browser concurrency queue
         timer.progress()
 
         if (ev.lengthComputable) {
@@ -223,22 +237,20 @@ module.exports = class XHRUpload extends Plugin {
         this.uppy.log(`[XHRUpload] ${id} finished`)
         timer.done()
 
-        if (ev.target.status >= 200 && ev.target.status < 300) {
+        if (opts.validateStatus(ev.target.status, xhr.responseText, xhr)) {
           const body = opts.getResponseData(xhr.responseText, xhr)
           const uploadURL = body[opts.responseUrlFieldName]
 
-          const response = {
+          const uploadResp = {
             status: ev.target.status,
             body,
             uploadURL
           }
 
-          this.uppy.setFileState(file.id, { response })
-
-          this.uppy.emit('upload-success', file, body, uploadURL)
+          this.uppy.emit('upload-success', file, uploadResp)
 
           if (uploadURL) {
-            this.uppy.log(`Download ${file.name} from ${file.uploadURL}`)
+            this.uppy.log(`Download ${file.name} from ${uploadURL}`)
           }
 
           return resolve(file)
@@ -251,9 +263,7 @@ module.exports = class XHRUpload extends Plugin {
             body
           }
 
-          this.uppy.setFileState(file.id, { response })
-
-          this.uppy.emit('upload-error', file, error)
+          this.uppy.emit('upload-error', file, error, response)
           return reject(error)
         }
       })
@@ -268,8 +278,12 @@ module.exports = class XHRUpload extends Plugin {
       })
 
       xhr.open(opts.method.toUpperCase(), opts.endpoint, true)
-
+      // IE10 does not allow setting `withCredentials` and `responseType`
+      // before `open()` is called.
       xhr.withCredentials = opts.withCredentials
+      if (opts.responseType !== '') {
+        xhr.responseType = opts.responseType
+      }
 
       Object.keys(opts.headers).forEach((header) => {
         xhr.setRequestHeader(header, opts.headers[header])
@@ -281,19 +295,14 @@ module.exports = class XHRUpload extends Plugin {
         if (removedFile.id === file.id) {
           timer.done()
           xhr.abort()
-        }
-      })
-
-      this.uppy.on('upload-cancel', (fileID) => {
-        if (fileID === file.id) {
-          timer.done()
-          xhr.abort()
+          reject(new Error('File removed'))
         }
       })
 
       this.uppy.on('cancel-all', () => {
         timer.done()
         xhr.abort()
+        reject(new Error('Upload cancelled'))
       })
     })
   }
@@ -311,28 +320,33 @@ module.exports = class XHRUpload extends Plugin {
         fields[name] = file.meta[name]
       })
 
-      const provider = new Provider(this.uppy, file.remote.providerOptions)
-      provider.post(
-        file.remote.url,
-        Object.assign({}, file.remote.body, {
-          endpoint: opts.endpoint,
-          size: file.data.size,
-          fieldname: opts.fieldName,
-          metadata: fields,
-          headers: opts.headers
-        })
-      )
-      .then((res) => {
+      const Client = file.remote.providerOptions.provider ? Provider : RequestClient
+      const client = new Client(this.uppy, file.remote.providerOptions)
+      client.post(file.remote.url, {
+        ...file.remote.body,
+        endpoint: opts.endpoint,
+        size: file.data.size,
+        fieldname: opts.fieldName,
+        metadata: fields,
+        headers: opts.headers
+      }).then((res) => {
         const token = res.token
-        const host = getSocketHost(file.remote.serverUrl)
+        const host = getSocketHost(file.remote.companionUrl)
         const socket = new Socket({ target: `${host}/api/${token}` })
 
         socket.on('progress', (progressData) => emitSocketProgress(this, progressData, file))
 
         socket.on('success', (data) => {
-          const resp = opts.getResponseData(data.response.responseText, data.response)
-          const uploadURL = resp[opts.responseUrlFieldName]
-          this.uppy.emit('upload-success', file, resp, uploadURL)
+          const body = opts.getResponseData(data.response.responseText, data.response)
+          const uploadURL = body[opts.responseUrlFieldName]
+
+          const uploadResp = {
+            status: data.response.status,
+            body,
+            uploadURL
+          }
+
+          this.uppy.emit('upload-success', file, uploadResp)
           socket.close()
           return resolve()
         })
@@ -357,12 +371,15 @@ module.exports = class XHRUpload extends Plugin {
       const formData = new FormData()
       files.forEach((file, i) => {
         const opts = this.getOptions(file)
-        formData.append(opts.fieldName, file.data)
+
+        if (file.name) {
+          formData.append(opts.fieldName, file.data, file.name)
+        } else {
+          formData.append(opts.fieldName, file.data)
+        }
       })
 
       const xhr = new XMLHttpRequest()
-
-      xhr.withCredentials = this.opts.withCredentials
 
       const timer = this.createProgressTimeout(this.opts.timeout, (error) => {
         xhr.abort()
@@ -398,10 +415,14 @@ module.exports = class XHRUpload extends Plugin {
       xhr.addEventListener('load', (ev) => {
         timer.done()
 
-        if (ev.target.status >= 200 && ev.target.status < 300) {
-          const resp = this.opts.getResponseData(xhr.responseText, xhr)
+        if (this.opts.validateStatus(ev.target.status, xhr.responseText, xhr)) {
+          const body = this.opts.getResponseData(xhr.responseText, xhr)
+          const uploadResp = {
+            status: ev.target.status,
+            body
+          }
           files.forEach((file) => {
-            this.uppy.emit('upload-success', file, resp)
+            this.uppy.emit('upload-success', file, uploadResp)
           })
           return resolve()
         }
@@ -426,8 +447,12 @@ module.exports = class XHRUpload extends Plugin {
       })
 
       xhr.open(method.toUpperCase(), endpoint, true)
-
+      // IE10 does not allow setting `withCredentials` and `responseType`
+      // before `open()` is called.
       xhr.withCredentials = this.opts.withCredentials
+      if (this.opts.responseType !== '') {
+        xhr.responseType = this.opts.responseType
+      }
 
       Object.keys(this.opts.headers).forEach((header) => {
         xhr.setRequestHeader(header, this.opts.headers[header])
@@ -485,10 +510,12 @@ module.exports = class XHRUpload extends Plugin {
 
   install () {
     if (this.opts.bundle) {
+      const { capabilities } = this.uppy.getState()
       this.uppy.setState({
-        capabilities: Object.assign({}, this.uppy.getState().capabilities, {
-          bundled: true
-        })
+        capabilities: {
+          ...capabilities,
+          individualCancellation: false
+        }
       })
     }
 
@@ -497,10 +524,12 @@ module.exports = class XHRUpload extends Plugin {
 
   uninstall () {
     if (this.opts.bundle) {
+      const { capabilities } = this.uppy.getState()
       this.uppy.setState({
-        capabilities: Object.assign({}, this.uppy.getState().capabilities, {
-          bundled: true
-        })
+        capabilities: {
+          ...capabilities,
+          individualCancellation: true
+        }
       })
     }
 

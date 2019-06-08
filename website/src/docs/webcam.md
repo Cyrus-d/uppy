@@ -1,11 +1,13 @@
 ---
 type: docs
-order: 26
+order: 3
 title: "Webcam"
+module: "@uppy/webcam"
 permalink: docs/webcam/
+category: 'Sources'
 ---
 
-The Webcam plugin lets you take photos and record videos with a built-in camera on desktop and mobile devices.
+The `@uppy/webcam` plugin lets you take photos and record videos with a built-in camera on desktop and mobile devices.
 
 > To use the Webcam plugin in Chrome, [your site should be served over https](https://developers.google.com/web/updates/2015/10/chrome-47-webrtc#public_service_announcements). This restriction does not apply on `localhost`, so you don't have to jump through many hoops during development.
 
@@ -17,17 +19,38 @@ uppy.use(Webcam, {
 })
 ```
 
-[Try live!](/examples/dashboard/)
+<a class="TryButton" href="/examples/dashboard/">Try it live</a>
 
 ## Installation
 
 This plugin is published as the `@uppy/webcam` package.
 
+Install from NPM:
+
 ```shell
 npm install @uppy/webcam
 ```
 
+In the [CDN package](/docs/#With-a-script-tag), it is available on the `Uppy` global object:
+
+```js
+const Webcam = Uppy.Webcam
+```
+
+## CSS
+
+The `@uppy/webcam` plugin requires the following CSS for styling:
+
+```js
+import '@uppy/core/dist/style.css'
+import '@uppy/webcam/dist/style.css'
+```
+
+Import general Core styles from `@uppy/core/dist/style.css` first, then add the Webcam styles from `@uppy/webcam/dist/style.css`. A minified version is also available as `style.min.css` at the same path. The way to do import depends on your build system.
+
 ## Options
+
+The `@uppy/webcam` plugin has the following configurable options:
 
 ```js
 uppy.use(Webcam, {
@@ -47,7 +70,11 @@ uppy.use(Webcam, {
 
 ### `id: 'Webcam'`
 
-A unique identifier for this plugin. Defaults to `'Webcam'`.
+A unique identifier for this plugin. It defaults to `'Webcam'`.
+
+### `title: 'Camera'`
+
+Configures the title / name shown in the UI, for instance, on Dashboard tabs. It defaults to `'Camera'`.
 
 ### `target: null`
 
@@ -55,7 +82,7 @@ DOM element, CSS selector, or plugin to mount Webcam into.
 
 ### `countdown: false`
 
-When taking a picture: the amount of seconds to wait before actually taking a snapshot. If `false` or 0, the timeout is disabled entirely. This also shows a `Smile!` message with the [Informer](/docs/informer) before the picture is taken.
+When taking a picture: the amount of seconds to wait before actually taking a snapshot. If set to `false` or 0, the timeout is disabled entirely. This also shows a `Smile!` message through the [Informer](/docs/informer) before the picture is taken.
 
 ### `onBeforeSnapshot: () => Promise.resolve()`
 
@@ -74,11 +101,11 @@ By default, all modes are allowed, and the Webcam plugin will show controls for 
 
 ### `mirror: true`
 
-Whether to mirror preview image from the camera. This option is useful when taking a selfie with a front camera: when you wave your right hand, you will see your hand on the right on the preview screen, like in the mirror. But when you actually take a picture, it will not be mirrored. This is how smartphone selfie cameras behave.
+Configures whether or not to mirror preview image from the camera. This option is useful when taking a selfie with a front camera: when you wave your right hand, you will see your hand on the right on the preview screen, like in the mirror. But when you actually take a picture, it will not be mirrored. This is how smartphone selfie cameras behave.
 
 ### `facingMode: 'user'`
 
-Devices sometimes have multiple cameras, front and back, for example. There’s a browser API to set which camera will be used, [facingMode](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints/facingMode):
+Devices sometimes have multiple cameras, front and back, for example. There is a browser API to set which camera will be used, [facingMode](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints/facingMode):
 
 - `user`: The video source is facing toward the user; this includes, for example, the front-facing camera on a smartphone.
 - `environment`:  The video source is facing away from the user, thereby viewing their environment. This is the back camera on a smartphone.
@@ -105,5 +132,9 @@ strings: {
   // Used as the label for the button that stops a video recording.
   // This is not visibly rendered but is picked up by screen readers.
   stopRecording: 'Stop video recording',
+  // Title on the “allow access” screen
+  allowAccessTitle: 'Please allow access to your camera',
+  // Description on the “allow access” screen
+  allowAccessDescription: 'In order to take pictures or record video with your camera, please allow camera access for this site.'
 }
 ```

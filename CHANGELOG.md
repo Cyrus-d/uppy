@@ -19,110 +19,749 @@ last Friday of every new month.
 Ideas that will be planned and find their way into a release at one point.
 PRs are welcome! Please do open an issue to discuss first if it's a big feature, priorities may have changed after something was added here.
 
-- [ ] core: Decouple rendering from the Plugin base class?
-- [ ] core: Make sure Uppy works well in VR
-- [ ] test: Human should check http://www.webpagetest.org and https://developers.google.com/web/tools/lighthouse/, use it sometimes to test website and Uppy. Will show response/loading times and other issues
-- [ ] test: Human should test with real screen reader to identify accessibility problems
-- [ ] test: setup an HTML page with all sorts of crazy styles, resets & bootstrap to see what brakes Uppy (@arturi)
-- [ ] dependencies: es6-promise --> lie https://github.com/calvinmetcalf/lie ?
+- [ ] build: utilize https://github.com/jonathantneal/postcss-preset-env, maybe https://github.com/jonathantneal/postcss-normalize (@arturi)
+- [ ] companion: pass metadata to S3 `getKey` option, see https://github.com/transloadit/uppy/issues/689
+- [ ] companion: Transfer files between providers (from instagram to Google drive for example).
+- [ ] companion: what happens if access token expires amid an upload/download process.
 - [ ] core: accessibility research: https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb, http://khan.github.io/tota11y/
+- [ ] core: Add total max size to restrictions #514
 - [ ] core: consider adding presets, see https://github.com/cssinjs/jss-preset-default/blob/master/src/index.js (@arturi)
-- [ ] uppy/uppy-server: Transfer files between providers (from instagram to Google drive for example).
-- [ ] uploaders: consider not showing progress updates from the server after an upload’s been paused (@arturi, @ifedapoolarewaju)
-- [ ] maybe restrict system file picking dialog too https://github.com/transloadit/uppy/issues/253
-- [ ] uppy-server: what happens if access token expires amid an upload/download process.
-- [ ] good way to change plugin options at runtime—maybe `this.state.options`?
-- [x] s3: multipart/"resumable" uploads for large files (@goto-bus-stop)
-- [ ] DnD Bar: drag and drop + statusbar or progressbar ? (@arturi)
-- [ ] possibility to work on already uploaded / in progress files #112, #113
-- [ ] possibility to edit/delete more than one file at once #118, #97
-- [ ] optimize problematic filenames #72
-- [ ] an uploader plugin to receive files in a callback instead of uploading them
-- [ ] statusbar: add option to always show
-- [ ] have a `resetProgress` method for resetting a single file, and call it before starting an upload. see comment in #393
-- [ ] “Custom Provider” plugin for  Dashboard — shows already uploaded files or files from a custom service; accepts an array of files to show in options, no uppy-server required #362
-- [ ] WordPress plugin https://www.producthunt.com/posts/uppy-io#comment-559327 (“And Gravity forms”)
-- [ ] Transformations, cropping, filters for images, see #53
-- [ ] Prepare for (piwik-) tracking of usage of uppy ? see #83
-- [ ] screenshot+screencast support similar to Webcam #148
-- [ ] Webcam modes #198
-- [ ] feature: React Native support
-- [ ] consider iframe / more security for Transloadit/Uppy integration widget and Uppy itself. Page can’t get files from Google Drive if its an iframe; possibility for folder restriction for provider plugins
-- [ ] It would be nice in the long run to have a dynamic package builder here right on the website where you can select the plugins you need/want and it builds and downloads a minified version of them? Sort of like jQuery UI: https://jqueryui.com/download/
-- [ ] test: add https://github.com/pa11y/pa11y for automated accessibility testing?
-- [ ] test: add tests for `npm pack`
-- [ ] test: add deepFreeze to test that state in not mutated anywhere by accident #320
-- [ ] audio: audio recording similar to Webcam #143
-- [ ] add typescript definitions and JSDoc everywhere? https://github.com/Microsoft/TypeScript/wiki/Type-Checking-JavaScript-Files
-- [ ] transloadit plugin: maybe add option to disable uppy server endpoint overrides
-- [ ] dragdrop: change border color when files doesn’t pass restrictions on drag https://github.com/transloadit/uppy/issues/607
-- [ ] website: automatically generated page with all locale strings used in plugins
-- [ ] transloadit: option for StatusBar’s upload button to act as a "Start assembly" button? Useful if an assembly uses only import robots, such as /s3/import to start a batch transcoding job.
-- [ ] provider: Add Facebook
-- [ ] provider: Add OneDrive
-- [ ] provider: Add Box
-- [ ] provider: change ProviderViews signature to receive Provider instance in second param. ref https://github.com/transloadit/uppy/pull/743#discussion_r180106070
 - [ ] core: css-in-js, while keeping non-random classnames (ideally prefixed) and useful preprocessor features. also see simple https://github.com/codemirror/CodeMirror/blob/master/lib/codemirror.css (@arturi, @goto-bus-stop)
-- [ ] webcam: Stop recording when file size is exceeded, should be possible given how the MediaRecorder API works
+- [ ] core: Fire event when a restriction fails #1251
+- [ ] core: good way to change plugin options at runtime—maybe `this.state.options`?
+- [ ] core: have a `resetProgress` method for resetting a single file, and call it before starting an upload. see comment in #393
+- [ ] core: Make sure Uppy works well in VR
+- [ ] core: normalize file names when uploading from iOS? $678
+- [ ] core: optimize problematic filenames #72
+- [ ] dashboard: “Custom Provider” plugin for  Dashboard — shows already uploaded files or files from a custom service; accepts an array of files to show in options, no companion required #362
+- [ ] dashboard: add image cropping, study https://github.com/MattKetmo/darkroomjs/, https://github.com/fengyuanchen/cropperjs #151
 - [ ] dashboard: add option to disable uploading from local disk #657
+- [ ] dashboard: Allow custom form fields in dashboard meta editing via jsx rendering (#617, #809, #454, @arturi)
+- [ ] dashboard: allow minimizing the Dashboard during upload (Uppy then becomes just a tiny progress indicator) (@arturi)
+- [ ] dashboard: Don't hide notifications if they're hovered (https://github.com/transloadit/uppy/issues/1439)
+- [ ] dashboard: allow selecting folders (add separate hidden input button for folders) #447 #1027
+- [ ] dashboard: Consider uploading image thumbnails too #1212
 - [ ] dashboard: display data like image resolution on file cards #783
-- [ ] server: pass metadata to S3 `getKey` option, see https://github.com/transloadit/uppy/issues/689
-- [ ] core: I think there is a use case for having a single-use mode or something for Uppy, where pressing "Upload" locks it down (no new files can be added) and once the upload is finished it's just done. especially with the Form plugin
-- [] dashboard: hiding pause/resume from the UI by default (with option) would be good too probably (we could auto pause and show a resume button when detecting a network change to a metered network using https://devdocs.io/dom/networkinformation/type)
+- [ ] dashboard: fix incorrectly rotated image thumbnails #472
+- [ ] dashboard: hiding pause/resume from the UI by default (with option) would be good too probably (we could auto pause and show a resume button when detecting a network change to a metered network using https://devdocs.io/dom/networkinformation/type)
+- [ ] dashboard: possibility to edit/delete more than one file at once #118, #97
+- [ ] dashboard: possibility to work on already uploaded / in progress files #112, #113
+- [ ] dashboard: Show upload speed too if `showProgressDetails: true`. Maybe have separate options for which things are displayed, or at least have css-classes that can be hidden with `display: none` #766
+- [ ] dependencies: es6-promise --> lie https://github.com/calvinmetcalf/lie ?
+- [ ] dragdrop: Add `directories-dropped` event #849
+- [ ] dragdrop: allow customizing arrow icon https://github.com/transloadit/uppy/pull/374#issuecomment-334116208 (@arturi)
+- [ ] dragdrop: change border color when files doesn’t pass restrictions on drag https://github.com/transloadit/uppy/issues/607
+- [ ] dragdrop: drag and drop + statusbar or progressbar ? (@arturi)
+- [ ] goldenretriever: confirmation before restore, add “ghost” files #443 #257 (@arturi)
+- [ ] google: show thumbnails when connecting with Google Drive #1162 (@ifedapoolarewaju)
+- [ ] plugins: audio/memo recording similar to Webcam #143
+- [ ] plugins: Plugins - Keybase.io Remote provider plugin! #943
+- [ ] plugins: screenshot+screencast support similar to Webcam #148
+- [ ] plugins: Transformations, cropping, filters for images, see #53
+- [ ] plugins: WordPress plugin https://www.producthunt.com/posts/uppy-io#comment-559327 (“And Gravity forms”)
+- [ ] provider: Add Facebook, OneDrive, Box
+- [ ] provider: add sorting, filtering, previews #254
+- [ ] provider: allow consuming developers to pass in their own ProviderViews to Provider Plugins https://github.com/transloadit/uppy/issues/1143
+- [ ] provider: change ProviderViews signature to receive Provider instance in second param. (https://github.com/transloadit/uppy/pull/743#discussion_r180106070)
+- [ ] provider: MediaLibrary provider which shows you files that have already been uploaded #450, #1121, #1112
+- [ ] react: Component wrappers to manage the Uppy instance, many people initialize it in render() which does not work correctly so this could make it easier for them https://github.com/transloadit/uppy/pull/1247#issuecomment-458063951
+- [ ] core: implement a `uppy.getPlugin(x).setOptions()` method so that you can e.g. dynamically show `hideUploadButton`. we can then use this in the react component so that it rerenders appropriately. Can we also use this for changing Locales? #1193
+- [ ] rn: Uppy React Native works with Expo, now let's make it work without
+- [ ] rn: Uppy React Native works with Url Plugin, now let's make it work with Instagram
+- [ ] security: consider iframe / more security for Transloadit/Uppy integration widget and Uppy itself. Page can’t get files from Google Drive if its an iframe; possibility for folder restriction for provider plugins
+- [ ] statusbar: add option to always show
 - [ ] test: Add a prepublish test that checks if `npm pack` is not massive
-- [ ] Add release documentation. eg: test on transloadit website, check examples on the uppy.io website
+- [ ] test: add deepFreeze to test that state in not mutated anywhere by accident #320
+- [ ] test: add https://github.com/pa11y/pa11y for automated accessibility testing?
+- [ ] test: add typescript with JSDoc (@arturi) https://github.com/Microsoft/TypeScript/wiki/Type-Checking-JavaScript-Files
+- [ ] test: Human should test with real screen reader to identify accessibility problems
+- [ ] transloadit: consider adding option to append result link from transloadit to the link thing in the Dashboard file block #1177
+- [ ] transloadit: maybe add option to disable Companion endpoint overrides
+- [ ] transloadit: option for StatusBar’s upload button to act as a "Start assembly" button? Useful if an assembly uses only import robots, such as /s3/import to start a batch transcoding job.
+- [ ] uploaders: consider not showing progress updates from the server after an upload’s been paused (@arturi, @ifedapoolarewaju)
+- [ ] webcam: Pick format based on `restrictions.allowedFileTypes`, eg. use PNG for snapshot instead of JPG if `allowedFileTypes: ['.png']` is set
+- [ ] webcam: Specify the resolution of the webcam images. We should add a way to specify any custom constraints to the Webcam plugin #876
+- [ ] webcam: Stop recording when file size is exceeded, should be possible given how the MediaRecorder API works
+- [ ] webcam: UI or separate plugins for choosing between webcam audio-video/video-only/audio-only modes #198
+- [ ] webcam: Webcam modes #198
+- [ ] website: automatically generated page with all locale strings used in plugins
+- [ ] website: It would be nice in the long run to have a dynamic package builder here right on the website where you can select the plugins you need/want and it builds and downloads a minified version of them? Sort of like jQuery UI: https://jqueryui.com/download/
+- [ ] xhr: allow sending custom headers per file (as proposed in #785)
+- [-] dashboard: if you specified a delete endpoint, the “remove/cancel upload” button remains after the upload and it not only removes, but also sends a request to that endpoint #1216, #832 <-- not doing this anymore because https://github.com/transloadit/uppy/pull/589#issuecomment-366754294
 
-## 1.0 Goals
+## 2.0
 
-What we need to do to release Uppy 1.0
+- [ ] docs: Completely drop soft IE10 (and IE11?) support
+- [ ] dashboard: showing links to files should be turned off by default (it's great for devs, they can opt-in, but for end-user UI it's weird and can even lead to problems though)
+- [ ] xhr: change default name depending on wether `bundle` is set `files[]` (`true`) vs `file` (default) (#782)
 
-- [ ] website: big release blog post
+## 1.4
+
+- [ ] core: check option types early, like making sure `allowedFileTypes` is an array, in cases where JS would not be able to auto-fix via typecasting (otherwise it's BC-breaking)
+- [ ] dashboard: Add a Load More button so you don't have to TAB endlessly to get to the upload button (https://github.com/transloadit/uppy/issues/1419)
+- [ ] dashboard: Add Done button when upload is successfully finished (https://github.com/transloadit/uppy/issues/1510)
+- [ ] dashboard: Change select button to just say `Select 11` instead of 11 files, or folder (https://github.com/transloadit/uppy/issues/1422)
+- [ ] dashboard/dragndrop/fileinput: Add a `disabled` (`true`||`false`) option (https://github.com/transloadit/uppy/issues/1530)
+- [ ] statusbar: Add a confirmation of the cancel action (https://github.com/transloadit/uppy/issues/1418)
+- [ ] test: Switch one existing e2e test to use Parcel (create-react-app already using webpack)
+
+## 1.3
+
+- [ ] ! core: _calculateTotalProgress results in incorrectly high (1038%) progress with files that don’t have size (like from Instagram) (@goto-bus-stop)
+- [ ] @uppy/transloadit: finish Transloadit-Client header on https://github.com/transloadit/uppy/tree/feature/transloadit-client
+- [ ] a11y: Fix remaining issues (https://github.com/transloadit/uppy/issues/created_by/nqst)
+- [ ] chore: fix up all code using the prettier branch. work is done, just needs an execute and review/okay by the team
 - [ ] chore: hunt down all `@TODO`s and either fix, or remove, or move to github issues/changelog backlog
 - [ ] chore: remove dead code/commented blocks
-- [ ] chore: rewrite all code based on prettier+standardjs.com
-- [ ] ~refactoring: Make `uppy-server` module live in main Uppy repo in `./server` as a second stage todo (after Lerna is done and we're happy) (@ife)
-- [ ] QA: manually test in multiple browsers and mobile devices again (SauceLabs can do Android/iOS too) (@nqst)
-- [ ] QA: add one integration test that uses a Webpack and React/Redux environment (e.g. via `create-react-app`) (@goto-bus-stop)
-- [ ] QA: add one integration test that uses a Provider (investigate if possible with a dedicated Google Drive API key for uppy server, so _with_ oauth dance) (@ife)
-- [ ] QA: add one integration test that uses more exotic (tus) options such as `useFastRemoteRetry` (@arturi)
-- [ ] feature: preset for Transloadit that mimics jQuery SDK, check https://github.com/transloadit/jquery-sdk docs (@goto-bus-stop)
-- [ ] feature: basic React Native support (@arturi owner+ios, @ife android)
-- [x] refactoring: split uppy into small packages, Lerna.js repo? and figure out how to share styles (during work, maybe add PR warning in `.github/*`? use `git mv` for everything) (@goto-bus-stop, @arturi)
-- [x] QA: make it so that all integration tests use `npm pack` and `npm install` first (@ife)
-- [x] docs: on using plugins, all options, list of plugins, i18n
-- [x] feature: beta file recovering after closed tab / browser crash
-- [x] feature: easy integration with React (UppyReact components)
-- [x] feature: finish the direct-to-s3 upload plugin and test it with the flow to then upload to :transloadit: afterwards. This is because this might influence the inner flow of the plugin architecture quite a bit
-- [x] feature: Redux and ReduxDevTools support (currently mirrors Uppy state to Redux)
-- [x] feature: restrictions: by size, number of files, file type
-- [x] QA: test uppy server. benchmarks / stress test. multiple connections, different setups, large files (10 GB)
-- [x] QA: tests for core and utils
-- [x] refactoring: possibly switch from Yo-Yo to Preact, because it’s more stable, solves a few issues we are struggling with (onload being weird/hard/modern-browsers-only with bel; no way to pass refs to elements; extra network requests with base64 urls) and mature, “new standard”, larger community
-- [x] refactoring: webcam plugin
-- [x] uppy-server: add uppy-server to main API service to scale it horizontally. for the standalone server, we could write the script to support multiple clusters. Not sure how required or neccessary this may be for Transloadit's API service.
-- [x] uppy-server: better error handling, general cleanup (remove unused code. etc)
-- [x] uppy-server: security audit
-- [x] uppy-server: storing tokens in user’s browser only (d040281cc9a63060e2f2685c16de0091aee5c7b4)
+- [ ] companion: reports an error at first sign in. we did a hotfix in https://github.com/transloadit/uppy/pull/1478#issuecomment-485937942 but need a proper fix for that (@ife). Also: what about changing the location of that tooltip? So legit errors also don't block buttons?
+- [ ] companion: restore deferredLength — parallel upload/download, 423 and 500 issues (@ife)
+- [ ] core: avoid overwriting duplicate files by a) throwing a warning instead and b) adding the relative-path of files to a new tus fingerprint function (we might use file.id as a fingerprint instead) (#754, #1606)
+- [ ] core: consider removing Preact from `Plugin` (maybe have a `(ui)Plugin extends BasePlugin`?) as pointed out on Reddit https://www.reddit.com/r/javascript/comments/bhkx5k/uppy_10_your_best_friend_in_file_uploading/
+- [ ] dashboard: add option to use `body` or `window` or CSS selector as drop zone / paste zone as well (@arturi)
+- [ ] dashboard: optional alert `onbeforeunload` while upload is in progress, safeguarding from accidentaly navigating away from a page with an ongoing upload
+- [ ] docs: Add a note to our browser support page that, while we have a saucelabs test for IE10, we're not actively supporting or fixing issues anymore (https://github.com/transloadit/uppy/issues/1420)
+- [ ] goldenretriever: make it work with aws multipart (@goto-bus-stop) https://community.transloadit.com/t/resumable-aws-s3-multipart-integration/14888
+- [ ] localepacks: Add Arabic, see if right-to-left causes issues, and fix them :)
+- [ ] meta: Clean up CHANGELOG's Backlog. Requires an Uppy call
+- [ ] meta: Turn Tim's feedback (https://app.asana.com/0/1113072057568884/1115520484178604) into actionable todos. Requires an Uppy call with Tim present
+- [ ] QA: add one integration test (or add to existing test) that uses more exotic (tus) options such as `useFastRemoteRetry` or `removeFingerprintOnSuccess` https://github.com/transloadit/uppy/issues/1327 (@arturi, @ifedapoolarewaju)
 
-# next
+## 1.2.0
+
+Released: 2019-06-07
+
+This release fixes an issue when using Transloadit and the @uppy/form plugin. To do so, a new `metaFields` option was added to the @uppy/tus plugin.
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/companion | 1.2.0 | @uppy/transloadit | 1.1.1 |
+| @uppy/locales | 1.4.0 | @uppy/tus | 1.2.0 |
+| @uppy/robodog | 1.1.1 | uppy | 1.2.0 |
+
+- @uppy/companion: ability to load secret keys from files (#1632 / @dargmuesli)
+- @uppy/locales: add Japanese (#1643 / @johnmanjiro13, @s-jcs)
+- @uppy/tus: add `metaFields` option (#1644 / @goto-bus-stop)
+
+## 1.1.0
+
+Released: 2019-06-05
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 1.1.0 | @uppy/provider-views | 1.1.0 |
+| @uppy/aws-s3 | 1.1.0 | @uppy/react-native | 0.1.2 |
+| @uppy/companion-client | 1.1.0 | @uppy/react | 1.1.0 |
+| @uppy/companion | 1.1.0 | @uppy/redux-dev-tools | 1.1.0 |
+| @uppy/core | 1.1.0 | @uppy/robodog | 1.1.0 |
+| @uppy/dashboard | 1.1.0 | @uppy/status-bar | 1.1.0 |
+| @uppy/drag-drop | 1.1.0 | @uppy/store-default | 1.1.0 |
+| @uppy/dropbox | 1.1.0 | @uppy/store-redux | 1.1.0 |
+| @uppy/file-input | 1.1.0 | @uppy/thumbnail-generator | 1.1.0 |
+| @uppy/form | 1.1.0 | @uppy/transloadit | 1.1.0 |
+| @uppy/golden-retriever | 1.1.0 | @uppy/tus | 1.1.0 |
+| @uppy/google-drive | 1.1.0 | @uppy/url | 1.1.0 |
+| @uppy/informer | 1.1.0 | @uppy/utils | 1.1.0 |
+| @uppy/instagram | 1.1.0 | @uppy/webcam | 1.1.0 |
+| @uppy/locales | 1.3.0 | @uppy/xhr-upload | 1.1.0 |
+| @uppy/progress-bar | 1.1.0 | uppy | 1.1.0 |
+
+- @uppy/robodog: actually support specifying Dashboard options (#1504 / @goto-bus-stop)
+- @uppy/aws-s3: Do not extract keys from empty `fields` (#1569 / @alexnj)
+- docs: Thumbnail Generator – Update arguments in "thumbnail:generated" callback docs (#1567 / @janko)
+- docs: polyfills are already included in the CDN bundle (#1576 / @arturi)
+- docs: xhr-upload: Update the `upload-success` event docs (#1573 / @janko)
+- build: Upgrade build dependencies: Babel to v7, Eslint to v5, Jest to v24, Typescript to v3, Postcss to v7 (#1549 / @goto-bus-stop)
+- build: Update iOS version in integration tests (#1548 / @goto-bus-stop)
+- build: New `uploadcdn` script (#1586 / @goto-bus-stop)
+- @uppy/locales: Added Hungarian translations (#1580 / @nagyv)
+- build: Fix tags for docker build (#1579 / @kiloreux)
+- build: Fix npm and github security warnings (#1601 / @goto-bus-stop)
+- build: New sync version (#1600 / @goto-bus-stop)
+- @uppy/companion: set upload filename from metadata during uploads (#1587 / @ifedapoolarewaju)
+- @uppy/dashboard: fix for file previews being partially invisible sometimes in safari (#1584 / @lakesare)
+@uppy/dashboard: made added-files previews look more proportional (#1588 / @lakesare, @arturi)
+- @uppy/dashboard, @uppy/drag-drop, @uppy/file-input: Fix/on before file added not called (#1597 / @lakesare, @arturi)
+- @uppy/react: dashboard react component prop typings updated (#1598 / @sagar7993)
+- @uppy/informer: Remove color-related code and docs (#1596 / @arturi)
+- @uppy/companion: Add remote-url to emit-success, fix #1607 (#1608 / @Zyclotrop-j)
+- @uppy/golden-retriever: Use this.opts instead of opts (#1618 / @arturi)
+- @uppy/locales: Create sr_Latn_RS.js for Serbian (Latin, Serbia) (#1614 / @arturi)
+- @uppy/locales: Support locale variants, see #1614 (f9f4b5d74b9b3fb2e24aaf935fed4d79ecae42ab / @kvz)
+- @uppy/dashboard: made paste work while we're focused on buttons (#1619 / @lakesare)
+- @uppy/companion: return mimetypes for dropbox files (#1599 / @ifedapoolarewaju)
+- @uppy/locales: Add Portuguese (brazil) language pack (pt_BR) (#1621 / @willycamargo)
+- website: fix demo not working in IE 11 (es5), add Dropbox too (07397ed88bed140cdca1f3cf19e2eaab2726bbb2 / @arturi)
+- docs: examples: mention that you need to install & bootstrap  (513ba53c378766e2d1e9c2885fd0311184b67c1d / @goto-bus-stop)
+- docs: Fix error in documentation of AWS S3 Multipart::prepareUploadPart(file, partData) (c4e739b90a06499918f737c6cdcdfd9b413c69b2 / @kvz, @mattes3)
+- docs: Explain how to not send any meta fields with xhr-upload (#1617 / @arturi)
+- @uppy/core: use `uploadStarted: null` instead of false (#1628 / @goto-bus-stop)
+- @uppy/utils - made getDroppedFiles.js work for IE11, fixes #1622 (#1630 / @lakesare)
+- @uppy/provider-views: make trailing slash optional when validating auth origin (#1589 / @ifedapoolarewaju)
+- @uppy/drag-drop: Feature/replace dnd in drag drop package (#1565 / @lakesare)
+
+## 1.0.2
+
+Released: 2019-05-17
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 1.0.2 | @uppy/progress-bar | 1.0.2 |
+| @uppy/aws-s3 | 1.0.2 | @uppy/provider-views | 1.0.2 |
+| @uppy/companion | 1.0.2 | @uppy/react | 1.0.2 |
+| @uppy/core | 1.0.2 | @uppy/redux-dev-tools | 1.0.2 |
+| @uppy/dashboard | 1.0.2 | @uppy/robodog | 1.0.2 |
+| @uppy/drag-drop | 1.0.2 | @uppy/status-bar | 1.0.2 |
+| @uppy/dropbox | 1.0.2 | @uppy/thumbnail-generator | 1.0.2 |
+| @uppy/file-input | 1.0.2 | @uppy/transloadit | 1.0.2 |
+| @uppy/form | 1.0.2 | @uppy/tus | 1.0.2 |
+| @uppy/golden-retriever | 1.0.2 | @uppy/url | 1.0.2 |
+| @uppy/google-drive | 1.0.2 | @uppy/utils | 1.0.2 |
+| @uppy/informer | 1.0.2 | @uppy/webcam | 1.0.2 |
+| @uppy/instagram | 1.0.2 | @uppy/xhr-upload | 1.0.2 |
+| @uppy/locales | 1.2.0 | uppy | 1.0.2 |
+
+- @uppy/companion, @uppy/provider-views: ⚠️Send version header: This fix restores backwards-compatibility with Uppy Client ^1.0.0, by introducing `uppyVersions` param (in the future also an `uppy-versions` header). If this param is present, the authentication token is sent in a new way, as a string, otherwise it’s sent the old way, as JSON object (incompatible with IE). Please use @uppy/companion@1.0.2 for backwards-compatibility, @uppy/companion@1.0.1 is deprecated (#1564 / @ifedapoolarewaju)
+- @uppy/core: mimeTypes.js - added pdf file type (#1558 / @lakesare)
+- @uppy/locales: Add zh_TW translation (#1562 / @green-mike)
+- companion: remove deprecated "authorized" endpoint (33add61b613c5fc38c7cbace2f140c97dedc8b73 / @ifedapoolarewaju)
+- companion: remove fallback `UPPYSERVER_*` env options (bf2220ab9f95a0794b8e46fe6ff50af9e4b955d9 / @ifedapoolarewaju)
+- docs: add docs on locales — how to use from NPM and CDN, auto-generated list of languages that are supported already, invitation to add more (#1553 / @arturi, @kvz)
+- docs: document Companions Auth and Token mechanism (#1540 / @ifedapoolarewaju)
+- docs: update AWS S3 Multipart documentation wrt CORS settings (#1539 / @manuelkiessling)
+- website: cleanup (#1536 / @nqst)
+- website: output console logs in order (#1547 / @goto-bus-stop)
+
+## 1.0.1
+
+Released: 2019-05-08
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 1.0.1 | @uppy/progress-bar | 1.0.1 |
+| @uppy/aws-s3 | 1.0.1 | @uppy/provider-views | 1.0.1 |
+| @uppy/companion-client | 1.0.1 | @uppy/react-native | 0.1.1 |
+| @uppy/companion | 1.0.1 | @uppy/react | 1.0.1 |
+| @uppy/core | 1.0.1 | @uppy/redux-dev-tools | 1.0.1 |
+| @uppy/dashboard | 1.0.1 | @uppy/robodog | 1.0.1 |
+| @uppy/drag-drop | 1.0.1 | @uppy/status-bar | 1.0.1 |
+| @uppy/dropbox | 1.0.1 | @uppy/thumbnail-generator | 1.0.1 |
+| @uppy/file-input | 1.0.1 | @uppy/transloadit | 1.0.1 |
+| @uppy/form | 1.0.1 | @uppy/tus | 1.0.1 |
+| @uppy/golden-retriever | 1.0.1 | @uppy/url | 1.0.1 |
+| @uppy/google-drive | 1.0.1 | @uppy/utils | 0.30.6 |
+| @uppy/informer | 1.0.1 | @uppy/webcam | 1.0.1 |
+| @uppy/instagram | 1.0.1 | @uppy/xhr-upload | 1.0.1 |
+| @uppy/locales | 1.1.0 | uppy | 1.0.1 |
+
+⚠️ `@uppy/companion@1.0.1` from this release has been deprecated, because it accidentally broke backwards-compatibility with Uppy Client `^1.0.0`. It is now fixed in `@uppy/companion@1.0.2`, please update. See https://github.com/transloadit/uppy/pull/1564 for details. Sorry about the trouble!
+
+This includes some important fixes for webpack, create-react-app, and Internet Explorer support, as well as a bunch of new languages! :sparkles:
+
+- pin preact to v8.2.9, fixes build problems with webpack and create-react-app (#1513 / @goto-bus-stop)
+- @uppy/companion, @uppy/companion-client: pass token through postMessage as JSON, fixes #1424 (@serverdevil, @goto-bus-stop)
+- @uppy/react: add thumbnailWidth prop type for Dashboard components, fixes #1524 (@goto-bus-stop)
+- @uppy/status-bar: hide seconds if ETA more than 1 hour (#1501 / @Tiarhai)
+- @uppy/locales: Add `es_ES` translation (#1502 / @jorgeepc)
+- @uppy/locales: Add `zh_CN` translation (#1503 / @Quorafind)
+- @uppy/locales: Add `fa_IR` translation (#1514 / @hrsh)
+- @uppy/locales: Add `it_IT` translation (#1516 / @tinny77)
+
+## 1.0.0
+
+Released: 2019-04-25
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 1.0.0 | @uppy/locales | 1.0.0 |
+| @uppy/aws-s3 | 1.0.0 | @uppy/progress-bar | 1.0.0 |
+| @uppy/companion-client | 1.0.0 | @uppy/provider-views | 1.0.0 |
+| @uppy/companion | 1.0.0 | @uppy/react | 1.0.0 |
+| @uppy/core | 1.0.0 | @uppy/redux-dev-tools | 1.0.0 |
+| @uppy/dashboard | 1.0.0 | @uppy/robodog | 1.0.0 |
+| @uppy/drag-drop | 1.0.0 | @uppy/status-bar | 1.0.0 |
+| @uppy/dropbox | 1.0.0 | @uppy/thumbnail-generator | 1.0.0 |
+| @uppy/file-input | 1.0.0 | @uppy/transloadit | 1.0.0 |
+| @uppy/form | 1.0.0 | @uppy/tus | 1.0.0 |
+| @uppy/golden-retriever | 1.0.0 | @uppy/url | 1.0.0 |
+| @uppy/google-drive | 1.0.0 | @uppy/webcam | 1.0.0 |
+| @uppy/informer | 1.0.0 | @uppy/xhr-upload | 1.0.0 |
+| @uppy/instagram | 1.0.0 | uppy | 1.0.0 |
+
+- @uppy/companion-client: Don’t show informer for an auth error for now (#1478 / @arturi)
+- @uppy/companion: Disable Tus parallel upload/download to solve pause/resume issues, until we figure out a better solution — (#1497 / @ifedapoolarewaju)
+- @uppy/companion: detect bytes upload mismatch for multipart uploads (#1470 / @ifedapoolarewaju)
+- @uppy/locales: Add Dutch locale (nl_NL) (#1462 / @clerx)
+- @uppy/locales: Add French language pack (#1481 / @kiloreux)
+- @uppy/locales: Add German language pack (#1475 / @tim-kos)
+- @uppy/locales: Add Russian language pack (ru_RU), make more strings translatable (#1467 / @arturi)
+- @uppy/react-native: Add custom file reader example for tus: this example uses expo-file-system, which does in reading file chunks for the case of ios. However, for the case of android, it seems to read the entire file. Publishing this example merely as a PoC so that other users can create their own fileReaders based on this example (#1489 / @ifedapoolarewaju)
+- @uppy/robodog: Add support for submitOnSuccess option (#1491 / @tim-kos)
+- @uppy/transloadit: Add assembly status property to assembly errors (#1488 / @goto-bus-stop)
+- @uppy/transloadit: Add connection error reporting (#1484 / @goto-bus-stop)
+- @uppy/tus: update tus-js-client to 1.8.0-0(057fb6200d9a7c6af452c5a79870fa74e362ec2c / @ifedapoolarewaju)
+- @uppy/xhr-upload: Add filename to FormData with `bundle: true` (#1487 / @goto-bus-stop)
+- @uppy/companion: investigate 423 and 500 issues with React Native + Url plugin when pause/resuming an upload (@ifedapoolarewaju)
+- docs: Add basic @uppy/react-native docs (#1494 / @arturi)
+- docs: Add docs for Thumbnail Generator plugin (#1468 / @arturi)
+- website: New website re-design by Alex (#1483 / @nqst, @arturi)
+
+## 0.30.5
+
+Released: 2019-04-19
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 0.30.5 | @uppy/progress-bar | 0.30.5 |
+| @uppy/aws-s3 | 0.30.5 | @uppy/provider-views | 0.30.5 |
+| @uppy/companion-client | 0.28.5 | @uppy/react-native | 0.0.3 |
+| @uppy/companion | 0.17.5 | @uppy/react | 0.30.5 |
+| @uppy/core | 0.30.5 | @uppy/redux-dev-tools | 0.30.5 |
+| @uppy/dashboard | 0.30.5 | @uppy/robodog | 0.30.5 |
+| @uppy/drag-drop | 0.30.5 | @uppy/status-bar | 0.30.5 |
+| @uppy/dropbox | 0.30.5 | @uppy/thumbnail-generator | 0.30.5 |
+| @uppy/file-input | 0.30.5 | @uppy/transloadit | 0.30.5 |
+| @uppy/form | 0.30.5 | @uppy/tus | 0.30.5 |
+| @uppy/golden-retriever | 0.30.5 | @uppy/url | 0.30.5 |
+| @uppy/google-drive | 0.30.5 | @uppy/utils | 0.30.5 |
+| @uppy/informer | 0.30.5 | @uppy/webcam | 0.30.5 |
+| @uppy/instagram | 0.30.5 | @uppy/xhr-upload | 0.30.5 |
+| @uppy/locales | 0.30.5 | uppy | 0.30.5 |
+
+- @uppy/companion-client: ⚠️ breaking: rename serverUrl to companionUrl and serverPattern to companionAllowedHosts (#1446 / @ifedapoolarewaju)
+- @uppy/companion-client: Issue a warning if an outdated `serverUrl` or `serverPattern` option is used (#1459 / @arturi)
+- @uppy/companion: ⚠️ breaking: send illusive upload progress when multipart downloads are on (#1454 / @ifedapoolarewaju)
+- @uppy/companion: Fix serverless example (#1408 / @kiloreux)
+- @uppy/core: fire a `restriction-failed` event when restriction-failed (#1436 / @allenfantasy)
+- @uppy/core: fix logging objects (#1451 / @goto-bus-stop)
+- @uppy/core: Remove console.dir (#1411 / @arturi)
+- @uppy/dashboard: ⚠️ breaking: Improve drag to upload state: This uncovered a few drag-drop issues we have, it comes down to us needing something other than the drag-drop library (#1440 / @lakesare, @nqst)
+- @uppy/dashboard: ⚠️ breaking: new `getDroppedFiles` module that is an improvement over `drag-drop` we’ve been using (#1440 / @lakesare)
+- @uppy/dashboard: Design facelift — round 2: various improvements and fixes to the Dashboard UI (#1452 / @nqst)
+- @uppy/dashboard: Design facelift: various improvements and fixes to the Dashboard UI (#1442 / @nqst)
+- @uppy/locales: Default locale for all plugins (#1443 / @arturi, @kvz)
+- @uppy/react-native: Basic React Native support (#988 / @arturi, @ifedapoolarewaju, @kvz)
+- @uppy/robodog: add Dashboard API (#1450 / @goto-bus-stop)
+- @uppy/transloadit: Support assembly cancellation (#1431 / @goto-bus-stop)
+- @uppy/tus: ⚠️ breaking: will depend on ifedapoolarewaju’s fork for now, so it’s in sync with @uppy/companion and Lerna doesn’t have conflicts (11cb6504012655883ccfa202b5add55529152728 / @ifedapoolarewaju)
+- @uppy/tus: fix cannot start more uploads after cancel (#1429 / @ap--)
+- @uppy/website: Remove Plugins subsection, create Contributing subsection (#1435 / @kvz)
+- examples: Added node-xhr, php-xhr, python-xhr (#1389 / @samuelayo, @arturi)
+- website: New doc menu structure (#1405 / @kvz)
+
+## 0.30.4
+
+Released: 2019-04-04
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 0.30.4 | @uppy/progress-bar | 0.30.4 |
+| @uppy/aws-s3 | 0.30.4 | @uppy/provider-views | 0.30.4 |
+| @uppy/companion-client | 0.28.4 | @uppy/react | 0.30.4 |
+| @uppy/companion | 0.17.4 | @uppy/redux-dev-tools | 0.30.4 |
+| @uppy/core | 0.30.4 | @uppy/robodog | 0.30.4 |
+| @uppy/dashboard | 0.30.4 | @uppy/status-bar | 0.30.4 |
+| @uppy/drag-drop | 0.30.4 | @uppy/thumbnail-generator | 0.30.4 |
+| @uppy/dropbox | 0.30.4 | @uppy/transloadit | 0.30.4 |
+| @uppy/file-input | 0.30.4 | @uppy/tus | 0.30.4 |
+| @uppy/form | 0.30.4 | @uppy/url | 0.30.4 |
+| @uppy/golden-retriever | 0.30.4 | @uppy/utils | 0.30.4 |
+| @uppy/google-drive | 0.30.4 | @uppy/webcam | 0.30.4 |
+| @uppy/informer | 0.30.4 | @uppy/xhr-upload | 0.30.4 |
+| @uppy/instagram | 0.30.4 | uppy | 0.30.4 |
+
+- build: ⚠️ remove !important (postcss-safe-important) (#1344 / @arturi)
+- @uppy/core: un-hardcode concat in `youCanOnlyUploadFileTypes` locale: In some languages, it probably doesn't make much sense to put the list
+of allowed file types at the end. The list of mime types/extensions may not be desired at all, so now you can omit %{types} to not show it. (#1374 / @goto-bus-stop)
+- @uppy/core: ⚠️ YMPT™: Yet More Progress Tweaks — #1093 accidentally omitted file size reporting for GDrive/Dropbox uploads, this adds it back.
+Unsized files (like instagram photos) now are stored with size: null instead of 0 (#1376 / @goto-bus-stop)
+- @uppy/core: make allowedFileTypes extensions case insensitive (#1341 / @goto-bus-stop)
+- @uppy/companion: ⚠️ fix instagram hanging uploads (#1274 / @ifedapoolarewaju)
+- @uppy/companion-client: remove the use of window.location for React Native support (#1393 / @ifedapoolarewaju)
+- typescript: ⚠️ fix uppy package use with allowSyntheticImports: false (#1396 / @goto-bus-stop)
+- @uppy/core: ⚠️ remove console.dir, since it’s probably unnessesary now and not supported in React Native (@arturi / a4f94a8d6b475657837f7c51dfb0670cc77fc3de)
+- @uppy/xhr-upload: allow customized option to set upload status (#1360 / @Mactaivsh)
+- @uppy/dashboard: fix icons jiggling on hover in safari (#1410 / @lakesare)
+- @uppy/dashboard: the list items are now even out (#1398 / @lakesare)
+- @uppy/dashboard: remove jumpiness (mobile --> desktop) when uppy loads (#1383 / @lakesare)
+- @uppy/dashboard: Protect some more styles from bleeding (#1362 / @arturi)
+- build: Refactor npm scripts, clean up unused ones (#1392 / @kvz, @arturi)
+- build: Speed up website deploys (73f89f08d9dde9e096285a952528976a69d923cf / @kvz)
+- @uppy/xhr-upload: ⚠️ load CompanionClient appropriately (c1abfea33d0c3e80809814c1048b156028c8fcf9 / @ifedapoolarewaju)
+- @uppy/companion: ⚠️ send null when download is complete (@ifedapoolarewaju / de04c7978c6713995cbf1717f6ca7ffd292cdeb1)
+- @uppy/companion: overwrite bytestotal for only tus uploads (d9ec8d28f4c97da4c0dcb46fbf5804a0ee484eeb / @ifedapoolarewaju)
+- @uppy/companion: install git so we can fetch tus-js-client fork (#1404 / @goto-bus-stop)
+- @uppy/companion-client: ⚠️ return 401 for invalid access token (#1298 / @ifedapoolarewaju)
+- @uppy/companion-client: ⚠️ add asyn wrapper around token storage (#1369 / @ifedapoolarewaju)
+- @uppy/companion: Updated the callback URIs to reflect their correct location (#1366 / @HughbertD)
+- @uppy/companion: do not use Uploader instance if options validation failed #1354
+- @uppy/status-bar: fix StatusBar error tooltip positioning (f83b4b06d958a1f7e78885a61b645c3371feb1ae / @arturi)
+- @uppy/google-drive Show thumbnails instead of a generic icon in Google Drive (#1363 / @arturi)
+- @uppy/dropbox: HTTP-header-safe JSON for dropbox (#1371 / @yonahforst)
+- @uppy/informer: made the tooltip not overflow the uppy container (#1382 / @lakesare)
+- @uppy/aws-s3-multipart: for remote aws-s3 uploads (#1350 / @ifedapoolarewaju)
+- examples: use template + demo key for transloadit-textarea example (#1375 / @goto-bus-stop)
+- website: add markdown snippets example (#1379 / @arturi)
+- website: provide simple framework for doing blog post series (#1373 / @kvz)
+- locales: Remove outdated locales for now (#1355 / @arturi)
+- @uppy/thumbnail-generator: do not export tainted canvas, fixes #1321 (#1343 / @goto-bus-stop)
+- @uppy/companion: replace text only when text is valid (985fd62ed6017ea3786eefd2c222caeb26d7998e / @ifedapoolarewaju)
+
+## 0.30.3
+
+Released: 2019-03-08
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 0.30.3 | @uppy/provider-views | 0.30.3 |
+| @uppy/aws-s3 | 0.30.3 | @uppy/react | 0.30.3 |
+| @uppy/companion-client | 0.28.3 | @uppy/redux-dev-tools | 0.30.3 |
+| @uppy/companion | 0.17.3 | @uppy/robodog | 0.30.3 |
+| @uppy/core | 0.30.3 | @uppy/status-bar | 0.30.3 |
+| @uppy/dashboard | 0.30.3 | @uppy/store-default | 0.28.3 |
+| @uppy/drag-drop | 0.30.3 | @uppy/store-redux | 0.28.3 |
+| @uppy/dropbox | 0.30.3 | @uppy/thumbnail-generator | 0.30.3 |
+| @uppy/file-input | 0.30.3 | @uppy/transloadit | 0.30.3 |
+| @uppy/form | 0.30.3 | @uppy/tus | 0.30.3 |
+| @uppy/golden-retriever | 0.30.3 | @uppy/url | 0.30.3 |
+| @uppy/google-drive | 0.30.3 | @uppy/utils | 0.30.3 |
+| @uppy/informer | 0.30.3 | @uppy/webcam | 0.30.3 |
+| @uppy/instagram | 0.30.3 | @uppy/xhr-upload | 0.30.3 |
+| @uppy/progress-bar | 0.30.3 | uppy | 0.30.3 |
+
+- @uppy/dashboard: Dashboard a11y improvements: trap focus in the active panel only (#1272 / @arturi)
+- @uppy/companion: Make providers support react native (#1286 / @ifedapoolarewaju)
+- @uppy/xhr-upload: Reject cancelled uploads (#1316 / @arturi)
+- @uppy/aws-s3: Avoid throwing error when file has been removed (#1318 / @craigjennings11)
+- @uppy/companion: Remove resources requirements for companion (#1311 / @kiloreux)
+- @uppy/webcam: Don’t show Smile! if countdown is false (#1324 / @arturi)
+- docs: update webpack homepage URLs, update Robodog readme (#1323 / @goto-bus-stop)
+
+## 0.30.1 - 0.30.2
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 0.30.2 | @uppy/provider-views | 0.30.2 |
+| @uppy/aws-s3 | 0.30.2 | @uppy/react | 0.30.2 |
+| @uppy/companion-client | 0.28.2 | @uppy/redux-dev-tools | 0.30.2 |
+| @uppy/companion | 0.17.2 | @uppy/robodog | 0.30.2 |
+| @uppy/core | 0.30.2 | @uppy/status-bar | 0.30.2 |
+| @uppy/dashboard | 0.30.2 | @uppy/store-default | 0.28.2 |
+| @uppy/drag-drop | 0.30.2 | @uppy/store-redux | 0.28.2 |
+| @uppy/dropbox | 0.30.2 | @uppy/thumbnail-generator | 0.30.2 |
+| @uppy/file-input | 0.30.2 | @uppy/transloadit | 0.30.2 |
+| @uppy/form | 0.30.2 | @uppy/tus | 0.30.2 |
+| @uppy/golden-retriever | 0.30.2 | @uppy/url | 0.30.2 |
+| @uppy/google-drive | 0.30.2 | @uppy/utils | 0.30.2 |
+| @uppy/informer | 0.30.2 | @uppy/webcam | 0.30.2 |
+| @uppy/instagram | 0.30.2 | @uppy/xhr-upload | 0.30.2 |
+| @uppy/progress-bar | 0.30.2 | uppy | 0.30.2 |
+
+- @uppy/robodog: Add Robodog to CDN (#1304 / @kvz, @arturi)
+
+## 0.30.0
+
+- @uppy/robodog: 📣⚠️Add Robodog — Transloadit browser SDK (#1135 / @goto-bus-stop)
+- @uppy/core: Set response in Core rather than in upload plugins (#1138 / @arturi)
+- @uppy/core: Don’t emit a complete event if an upload has been canceled (#1271 / @arturi)
+- @uppy/companion: Support redis option (auth_pass, etc...) (#1215 / @tranvansang)
+- @uppy/companion: sanitize text before adding to html (f77a102 / @ifedapoolarewaju)
+- @uppy/dashboard: Update pause-resume-cancel icons (#1241 / @arturi, @nqst)
+- @uppy/dashboard: Fix issues with multiple modals (#1258 / @goto-bus-stop, @arturi)
+- @uppy/dashboard: Dashboard ui fixes: fix icon animation jiggling, inherit font, allow overriding outline, fix breadcrumbs, bug with x button being stuck, fix an issue with long note margin on mobile (#1279 / @arturi)
+- @uppy/provider-views: update instagram nextPagePath after every fetch  (25e31e5 / @ifedapoolarewaju)
+- @uppy/react: Allow changing instance in `uppy` prop (#1247 / @goto-bus-stop)
+- @uppy/react: Typescript: Make DashboardModal.target prop optional (#1254 / @mattes3)
+- @uppy/aws-s3: Use user provided filename / type for uploaded object, fixes #1238 (#1257 / @goto-bus-stop)
+- @uppy/tus: Update to tus-js-client@1.6.0 with React Native support (#1250 / @arturi)
+- build: Improve dev npm script: Use Parcel for bundled example, re-build lib automatically, don’t open browser and no ghosts mode, start companion when developing (but there’s optional npm run dev:no-companion) (#1280 / @arturi)
+
+## 0.29.1
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 0.29.1 | @uppy/provider-views | 0.29.1 |
+| @uppy/aws-s3 | 0.29.1 | @uppy/react | 0.29.1 |
+| @uppy/companion-client | 0.27.3 | @uppy/redux-dev-tools | 0.29.1 |
+| @uppy/companion | 0.16.1 | @uppy/status-bar | 0.29.1 |
+| @uppy/core | 0.29.1 | @uppy/store-default | 0.27.1 |
+| @uppy/dashboard | 0.29.1 | @uppy/store-redux | 0.27.1 |
+| @uppy/drag-drop | 0.29.1 | @uppy/thumbnail-generator | 0.29.1 |
+| @uppy/dropbox | 0.29.1 | @uppy/transloadit | 0.29.1 |
+| @uppy/file-input | 0.29.1 | @uppy/tus | 0.29.1 |
+| @uppy/form | 0.29.1 | @uppy/url | 0.29.1 |
+| @uppy/golden-retriever | 0.29.1 | @uppy/utils | 0.29.1 |
+| @uppy/google-drive | 0.29.1 | @uppy/webcam | 0.29.1 |
+| @uppy/informer | 0.29.1 | @uppy/xhr-upload | 0.29.1 |
+| @uppy/instagram | 0.29.1 | uppy | 0.29.1 |
+| @uppy/progress-bar | 0.29.1 | - | - |
+
+- @uppy/react: ⚠️ Make Uppy’s React components usable from Typescript (#1131 / @mattes3)
+- build: ⚠️ CJSify @uppy/core typings + add more typings tests (#1194 / @goto-bus-stop)
+- build: ⚠️ Added Promise and Fetch polyfills to uppy bundle (#1187 / @arturi)
+- build: ⚠️ Only rebuild changed files with `npm run build:lib` (#1237 / @goto-bus-stop)
+- build: ⚠️ Remove jsnext:main since it’s been deprecated https://github.com/stereobooster/package.json#jsnextmain (#1242 / @arturi)
+- @uppy/companion: ⚠️ Fix: return next page path for ig only when posts exist (e5a2694a2d95e1923dd2ca515e7d37132a5828ba / @ifedapoolarewaju)
+- @uppy/status-bar: Account for MS Edge’s missing progress updates, fixes #945. Previously, upload progress would be stuck at 0% until everything is finished. With this patch, in the affected MS Edge versions, the status bar is transformed into an “indeterminate” progress state (#1184 / @goto-bus-stop)
+- @uppy/dashboard: Log error if `trigger` is not found (#1217 / @goto-bus-stop)
+- @uppy/xhr-upload: Fix `responseType` in IE 11, fixes #1228: The same restriction applies to responseType as to withCredentials. Both must be set after the open() call in Internet Explorer. (#1231 / @goto-bus-stop)
+- @uppy/xhr-upload: Postpone timeout countdown until upload has started (i.e. has left browser concurrency queue (fixes #1190) (#1195 / @davilima6)
+- website: Add polyfills to website examples that do not use prebundled uppy.js (#1229 / @goto-bus-stop)
+- docs: Add privacy policy (#1196 / @arturi)
+- docs: Update aws-s3.md wrt S3 public access settings (#1236 / @manuelkiessling)
+- @uppy/companion: deprecate deprecate debugLogger (8f9946346904217e714e256db06b759cc3bb66b0 / @ifedapoolarewaju)
+- @uppy/companion: Update morgan dependency, fixes #1227 (#1232 / @goto-bus-stop)
+
+## 0.29.0
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| @uppy/aws-s3-multipart | 0.29.0 | @uppy/progress-bar | 0.29.0 |
+| @uppy/aws-s3 | 0.29.0 | @uppy/provider-views | 0.29.0 |
+| @uppy/companion | 0.16.0 | @uppy/react | 0.29.0 |
+| @uppy/core | 0.29.0 | @uppy/redux-dev-tools | 0.29.0 |
+| @uppy/dashboard | 0.29.0 | @uppy/status-bar | 0.29.0 |
+| @uppy/drag-drop | 0.29.0 | @uppy/thumbnail-generator | 0.29.0 |
+| @uppy/dropbox | 0.29.0 | @uppy/transloadit | 0.29.0 |
+| @uppy/file-input | 0.29.0 | @uppy/tus | 0.29.0 |
+| @uppy/form | 0.29.0 | @uppy/url | 0.29.0 |
+| @uppy/golden-retriever | 0.29.0 | @uppy/utils | 0.29.0 |
+| @uppy/google-drive | 0.29.0 | @uppy/webcam | 0.29.0 |
+| @uppy/informer | 0.29.0 | @uppy/xhr-upload | 0.29.0 |
+| @uppy/instagram | 0.29.0 | uppy | 0.29.0 |
+
+- @uppy/core: ⚠️ **breaking** Separate Core and Plugin styles — @uppy/core styles and plugins (@uppy/webcam, for example) now have to be included separately (#1167 / @arturi)
+- @uppy/core: Don't pass removed file IDs to next upload step, fixes (#1148 / @goto-bus-stop)
+- @uppy/core: Fixed getFileType() when passed a file with an upper case extension (#1169 / @jderrough)
+- @uppy/xhr-upload: Add `responseType` option — allows configuring the XMLHttpRequest `.responseType` value (#1150 / @goto-bus-stop)
+- @uppy/companion: Use `createCipheriv` instead of deprecated `createCipher` (#1149 / @goto-bus-stop)
+- @uppy/companion: Store Provider instances on `this.provider` instead of `this[this.id]` (@goto-bus-stop / #1174)
+- @uppy/companion: Pin grant to known stable version (@ifedapoolarewaju / #1165)
+- @uppy/companion: Fix — socket does not handle server.path option (#1142 / @tranvansang)
+- @uppy/status-bar: Use file sizes for progress calculations (#1153 / @goto-bus-stop)
+- @uppy/webcam: Fix a bug with Webcam video overflowing its container (68730f8a1bf731898d46883e00fed937d3ab54ab / @arturi)
+- docs: Add `triggerUploadOnSubmit` to Form docs, add docs about options of hiding upload/pause/resume/cancel buttons; talk about bundler-less polyfill use (@goto-bus-stop, @arturi)
+- @uppy/dashboard: Better center pause/resume/cancel icons (@arturi / 5112ecf1f48bec9c67309244120fce5f005241ce)
+- @uppy/react: Allow Dashboard props width and height to accept a string for 100% (#1129 / craigcbrunner)
+- Added note about uppy bundle polyfils in uppy readme.md (@goto-bus-stop)
+
+## 0.28.0
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| uppy | 0.28.0 | @uppy/xhr-upload | 0.28.0 |
+| @uppy/core | 0.28.0 | @uppy/react | 0.28.0 |
+| @uppy/dashboard | 0.28.0 | @uppy/transloadit | 0.28.0 |
+| @uppy/dropbox | 0.28.0 | @uppy/tus | 0.28.0 |
+| @uppy/form | 0.28.0 | @uppy/url | 0.28.0 |
+| @uppy/informer | 0.28.0 | @uppy/webcam | 0.28.0 |
+| @uppy/utils | 0.28.0 | @uppy/url | 0.28.0 |
+| @uppy/thumbnail-generator | 0.28.0 | @uppy/status-bar | 0.28.0 |
+| @uppy/redux-dev-tools | 0.28.0 | @uppy/react | 0.28.0 |
+| @uppy/provider-views | 0.28.0 | @uppy/progress-bar | 0.28.0 |
+| @uppy/instagram | 0.28.0 | @uppy/informer | 0.28.0 |
+| @uppy/google-drive | 0.28.0 | @uppy/golden-retriever | 0.28.0 |
+| @uppy/form | 0.28.0 | @uppy/file-input | 0.28.0 |
+| @uppy/dropbox | 0.28.0 | @uppy/drag-drop | 0.28.0 |
+| @uppy/dashboard | 0.28.0 | @uppy/companion | 0.15.0 |
+| @uppy/aws-s3 | 0.28.0 | @uppy/aws-s3-multipart | 0.28.0 |
+
+- @uppy/core: bring back i18n locale packs (#1114 / @goto-bus-stop, @arturi)
+- @uppy/companion: option validation (can use https://npm.im/ajv + JSON schema)
+- @uppy/companion: Remove duplicate typescript dependency (#1119 / @goto-bus-stop)
+- @uppy/companion: ⚠️ **breaking** Migrate provider adapter to Companion: saves 5KB on the frontend, all heavy lifting moved to the server side (#1093 / @ifedapoolarewaju)
+- @uppy/core: single-use Uppy instance: adds an `allowMultipleUploads` option to @uppy/core. If set to false, uppy.upload() can only be called once. Afterward, no new files can be added and no new uploads can be started. This is intended to serve the `<form>`-like use case. (#1064 / @goto-bus-stop)
+- @uppy/dashboard: Auto close after finish using `closeAfterFinish: true` (#1106 / @goto-bus-stop)
+- @uppy/dashboard: call `hideAllPanels` after a file is added in Dashboard, instead of `toggleAddFilesPanel(false)` that didn’t hide some panels
+- @uppy/status-bar: ⚠️ **breaking** Add spinner, pause/resume as small round buttons, different color for encoding; Added separate options for hiding pause/resume and cancel button; Added more statuses to the Dashboard, like “Upload complete”, “Upload paused” and “Uploading 5 files” (#1097 / @arturi)
+- @uppy/url: add end2end test for Url plugin (#1120 / @ifedapoolarewaju)
+- @uppy/transloadit: add end2end test for @uppy/transloadit (#1086 / @arturi)
+- @uppy/thumbnail-generator: Add thumbnail generation integration test (#970 / @goto-bus-stop)
+- @uppy/thumbnail-generator: Allow to constrain thumbnail height, fixes #979 (@richartkeil / #1096)
+- @uppy/thumbnail-generator: Fix JPG previews on Edge (#1092 / @goto-bus-stop)
+- @uppy/aws-s3: use RequestClient, it contains the Uppy Companion specific stuff, so we don't have to think about that when working on the S3 plugin. (#1091 / @goto-bus-stop)
+- @uppy/transloadit: Add `COMPANION_PATTERN` constant (#1104 / @goto-bus-stop)
+- @uppy/transloadit: Error tweaks (#1103 / @goto-bus-stop)
+- @uppy/webcam: Fix getting data from Webcam recording if mime type includes codec metadata (#1094 / @goto-bus-stop)
+- @uppy/core: remove upload-cancel event, file-removed should be enough (#1069 / @arutri)
+- meta: document events, deprecate unused (#1069 / @arturi)
+- meta: New demo video/gif and website frontpage code sample (#1099 / @arturi)
+- meta: Update react.md (#1110 / @asmt3)
+- meta: Add missing addMoreFiles string to locale (#1111 / @FWirtz)
+- meta: Release script improvements: generate nicer releases and a nicer commit history. (#1122 / @goto-bus-stop)
+- meta: Add release documentation. eg: test on transloadit website, check examples on the uppy.io website (@goto-bus-stop)
+
+## 0.27.5
+
+Released: 2018-09-27
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| uppy | 0.27.5 | @uppy/instagram | 0.27.5 |
+| @uppy/core | 0.27.3 | @uppy/react | 0.27.5 |
+| @uppy/dashboard | 0.27.5 | @uppy/transloadit | 0.27.5 |
+| @uppy/dropbox | 0.27.4 | @uppy/tus | 0.27.5 |
+| @uppy/form | 0.27.4 | @uppy/url | 0.27.5 |
+| @uppy/informer | 0.27.4 | @uppy/webcam | 0.27.4 |
+
+- core: Add `onMount()` and `this.parent` to Plugin (#1062 / @arturi)
+- core: Call `removeFile` on each file when doing `cancelAll` (#1058 / @arturi)
+- dashboard: Fixing “ResizeObserver is not a constructor”, issue #1070, by doing `require('resize-observer-polyfill').default || require('resize-observer-polyfill')` (#1078 / @yoldar, @arturi, @goto-bus-stop)
+- dashboard: Only show the plus button if `props.totalFileCount < props.maxNumberOfFiles` (#1063 / @arturi)
+- status-bar: use `uppy-Root` in Status Bar when it’s mounted in DOM (#1081 / @arturi)
+- docs: added `uppy.off()` info (#1077 / @dviry)
+- docs: quick start guide, add simple HTML page snippet with Uppy https://community.transloadit.com/t/quick-start-guide-would-be-really-helpful/14605 (#1068 / @arturi)
+
+## 0.27.4
+
+Released: 2018-09-18
+
+New versions in this release:
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| uppy | 0.27.4 | @uppy/instagram | 0.27.4 |
+| @uppy/companion | 0.14.4 | @uppy/react | 0.27.4 |
+| @uppy/core | 0.27.2 | @uppy/transloadit | 0.27.4 |
+| @uppy/dashboard | 0.27.4 | @uppy/tus | 0.27.4 |
+| @uppy/dropbox | 0.27.3 | @uppy/url | 0.27.4 |
+| @uppy/form | 0.27.3 | @uppy/webcam | 0.27.3 |
+| @uppy/informer | 0.27.3 | - | - |
+
+Changes:
+
+- build: Add initial version table script [skip ci] (@goto-bus-stop)
+- build: Add more checks to release script (#1050 / @goto-bus-stop)
+- build: start companion once in tests (#1052 / @ifedapoolarewaju)
+- buid: set companion config values when running test (@ifedapoolarewaju)
+- @uppy/core: Note that the `<script>` tag should come at the bottom of the page (#1043 / @arturi)
+- @uppy/dashboard: Add paddings and remove outline-offset for tab buttons so that the outline is visible (26037ac145111d3c636a63840bb4daa61304bae5 / @arturi)
+- @uppy/dashboard: Replace updateDashboardElWidth with ResizeObserver (using resize-observer-polyfill) (#1053 / @arturi)
+- @uppy/dashboard: Add showSelectedFiles option (#1055 / @arturi)
+- @uppy/dashboard: Fix incorrect title (tooltip) message on file preview by refactoring (#1056 / @arturi)
+- @uppy/companion: Google Drive: Support Team Drives (#978 / @pauln)
+- @uppy/companion: Provider integration test fixes #(1013 / @goto-bus-stop)
+- @uppy/companion: Fix bug: oauth always redirects to root path (#1030 / @tranvansang)
+- @uppy/companion: Fix certificate generation for companion (#1041 / @kiloreux)
+
+## 0.27.3
+
+Released: 2018-09-03.
+
+New versions in this release:
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| uppy | 0.27.3 | @uppy/instagram | 0.27.3 |
+| @uppy/aws-s3-multipart | 0.27.2 | @uppy/progress-bar | 0.27.2 |
+| @uppy/aws-s3 | 0.27.2 | @uppy/provider-views | 0.27.2 |
+| @uppy/companion-client | 0.27.2 | @uppy/react | 0.27.3 |
+| @uppy/companion | 0.14.3 | @uppy/redux-dev-tools | 0.27.2 |
+| @uppy/core | 0.27.1 | @uppy/status-bar | 0.27.2 |
+| @uppy/dashboard | 0.27.3 | @uppy/thumbnail-generator | 0.27.2 |
+| @uppy/drag-drop | 0.27.2 | @uppy/transloadit | 0.27.3 |
+| @uppy/dropbox | 0.27.2 | @uppy/tus | 0.27.3 |
+| @uppy/file-input | 0.27.2 | @uppy/url | 0.27.3 |
+| @uppy/form | 0.27.2 | @uppy/utils | 0.27.1 |
+| @uppy/golden-retriever | 0.27.2 | @uppy/webcam | 0.27.2 |
+| @uppy/google-drive | 0.27.3 | @uppy/xhr-upload | 0.27.2 |
+| @uppy/informer | 0.27.2 | - | - |
+
+Changes:
+
+- build: Update readme contributors list before publish (#1023 / @goto-bus-stop)
+- build: Enable cssnano safe mode. Fixes `z-index` primarily. (@goto-bus-stop)
+- @uppy/status-bar: Show number of started uploads, fixes #983 (@goto-bus-stop)
+- @uppy/thumbnail-generator: Remove image clear code, fixes #1025. (#1028 / @goto-bus-stop)
+- @uppy/aws-s3-multipart: Proper cleanup on cancellation, fixes #992 (#1021 / @goto-bus-stop)
+- @uppy/utils: Add fallback to `getFileType` (#1022 / @goto-bus-stop)
+- @uppy/transloadit: Lazy load socket.io-client, avoiding `buffer` warnings in IE10 when using the `uppy` CDN package. (#1019 / @goto-bus-stop)
+- @uppy/webcam: Fix for Cordova mangling new File instances (#1034 / @firesharkstudios)
+- @uppy/xhr-upload: Add file name to Blob instance uploads (#1034 / @firesharkstudios)
+- @uppy/transloadit: Only use socket.io's WebSocket transport. (#1029 / @goto-bus-stop)
+- @uppy/companion: Rename `UPPYSERVER_` environment variables to `COMPANION_` + more. The old names still work for now but will be dropped in a future release (#1037 / @kvz)
+- ⚠️ **breaking** @uppy/transloadit: Change hosted Companion URLs to `https://api2.transloadit.com/companion`, using the hosted uppy-server URLs will now throw an error (#1038 / @goto-bus-stop)
+
+## 0.27.2
+
+Released: 2018-08-23.
+
+New versions in this release:
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| uppy | 0.27.2 | @uppy/react | 0.27.2 |
+| @uppy/companion | 0.14.2 | @uppy/transloadit | 0.27.2 |
+| @uppy/dashboard | 0.27.2 | @uppy/tus | 0.27.2 |
+| @uppy/google-drive | 0.27.2 | @uppy/url | 0.27.2 |
+| @uppy/instagram | 0.27.2 | - | - |
+
+Changes:
+
+- @uppy/companion: Auto deploy Companion. (#1008 / @kiloreux)
+- @uppy/transloadit: Refactors and add fallback if socket connection fails. (#1011 / @goto-bus-stop)
+- ci: No need to web:install if we're not deploying. (#1012 / @goto-bus-stop)
+
+## 0.27.1
+
+Released: 2018-08-16.
+
+New versions in this release:
+
+| Package | Version | Package | Version |
+|-|-|-|-|
+| uppy | 0.27.1 | @uppy/instagram | 0.27.1 |
+| @uppy/aws-s3-multipart | 0.27.1 | @uppy/progress-bar | 0.27.1 |
+| @uppy/aws-s3 | 0.27.1 | @uppy/provider-views | 0.27.1 |
+| @uppy/companion-client | 0.27.1 | @uppy/react | 0.27.1 |
+| @uppy/companion | 0.14.1 | @uppy/redux-dev-tools | 0.27.1 |
+| @uppy/dashboard | 0.27.1 | @uppy/status-bar | 0.27.1 |
+| @uppy/drag-drop | 0.27.1 | @uppy/thumbnail-generator | 0.27.1 |
+| @uppy/dropbox | 0.27.1 | @uppy/transloadit | 0.27.1 |
+| @uppy/file-input | 0.27.1 | @uppy/tus | 0.27.1 |
+| @uppy/form | 0.27.1 | @uppy/url | 0.27.1 |
+| @uppy/golden-retriever | 0.27.1 | @uppy/webcam | 0.27.1 |
+| @uppy/google-drive | 0.27.1 | @uppy/xhr-upload | 0.27.1 |
+| @uppy/informer | 0.27.1 | - | - |
+
+Changes:
+
+- @uppy/companion: use explicit typescript devDependency.
+- @uppy/companion: rename Server → Companion in documentation (#1007 / @goto-bus-stop)
+- website: Load all prism languages (#1004 / @goto-bus-stop)
+- @uppy/core: Fix peerDependencies of plugin packages. (#1005 / @goto-bus-stop)
+- @uppy/companion-client: Send cookies with fetch requests (#1000 / @geoffappleford)
+- Add e2e test for providers (#990 / @ifedapoolarewaju)
+- website: attempt to fix font sizes on mobile vs desktop (@arturi)
+- @uppy/dashboard:  show note and “powered by” when no acquire/sources plugins are used too (@arturi)
+- Update dependencies. (#995 / @goto-bus-stop)
 
 ## 0.27.0
 
-- [ ] dashboard: allow minimizing the Dashboard during upload (Uppy then becomes just a tiny progress indicator) (@arturi)
-- [ ] core: customizing metadata fields, boolean metadata; see #809, #454 and related (@arturi)
-- [ ] core: figure out per-plugin locales and i18n strings packs #491
-- [ ] goldenretriever: confirmation before restore, add “ghost” files #443 (@arturi)
-- [ ] test: add typescript with JSDoc (@arturi)
-- [ ] dragdrop: allow customizing arrow icon https://github.com/transloadit/uppy/pull/374#issuecomment-334116208 (@arturi)
-- [ ] dashboard: cancel button for transloadit assemblies (@arturi, @goto-bus-stop)
-- [ ] dashboard: optional alert `onbeforeunload` while upload is in progress, safeguarding from accidentaly navigating away from a page with an ongoing upload
-- [ ] dashboard: add image cropping, study https://github.com/MattKetmo/darkroomjs/, https://github.com/fengyuanchen/cropperjs #151
-- [ ] docs: quick start guide: https://community.transloadit.com/t/quick-start-guide-would-be-really-helpful/14605 (@arturi)
-- [ ] transloadit: add error reporting (@goto-bus-stop)
-- [ ] core: look into utilizing https://github.com/que-etc/resize-observer-polyfill for responsive components. See also https://github.com/transloadit/uppy/issues/750
-- [ ] core: use Browserslist config to share between PostCSS, Autoprefixer and Babel https://github.com/browserslist/browserslist, https://github.com/amilajack/eslint-plugin-compat (@arturi)
-- [ ] core: utilize https://github.com/jonathantneal/postcss-preset-env, maybe https://github.com/jonathantneal/postcss-normalize (@arturi)
-- [ ] core: default `autoProceed` to `false`
+Released: 2018-08-11.
+
+- @uppy/aws-s3-multipart: Check for file existance (#981 / @bartvde)
+- @uppy/aws-s3: Abort all chunk requests when aborting the multipart upload (#967 / @pekala)
+- @uppy/aws-s3: Catch and handle errors in prepareUploadPart (#966 / @pekala)
+- @uppy/companion: ⚠️ **breaking** rename uppy-server to @uppy/companion (#953 / @ifedapoolarewaju)
+- @uppy/companion: google Drive — move to v3 API (#977 / @pauln)
+- @uppy/core: allow editing plugin titles (names) so that e.g. “Camera” can be translated into different languages, fixes #920 (#942 / @arturi)
+- @uppy/core: fix `setPluginState` (#968 / @goto-bus-stop)
+- @uppy/core: make Uppy run in React Native (by adding `window !== undefined` check) (@arturi / #960)
+- @uppy/core: remove all: initial — was causing issues when multiple uppy stylesheets are used (#942 / @arturi)
+- @uppy/core: ⚠️ **breaking**  default `autoProceed` to `false` (#961 / @arturi)
+- @uppy/dashboard: downgrade `drag-drop` module to support folders again (#942 / @arturi)
+- @uppy/dashboard: fix animation — wait for closing animation to finish before opening modal (#942 / @arturi)
+- @uppy/dashboard: ⚠️ **breaking** Introduce `.uppy-size--md` and `.uppy-size--lg` breakpoint classes; throttle the function that checks for width (#942 / @arturi)
+- @uppy/dashboard: ⚠️ **breaking** UI overhaul: AddFiles panel, significantly improved mobile styles,  (#942 / @arturi, @nqst)
+- @uppy/informer: ⚠️ **breaking** make it monochrome and round. always gray, no status colors (#942 / @arturi)
+- @uppy/provider-views: fix wrong 'no files available' msg flash (#938 / @ifedapoolarewaju)
+- @uppy/url: fix Url plugin reacting to wrong drop/paste events, add ignoreEvent (#942 / @arturi)
+- @uppy/webcam: add webcam permission screen i18 strings, fixes #931 (#942 / @arturi)
+- build: Add object rest spread transform (#965 / @goto-bus-stop)
+- build: Split integration tests and add one using create-react-app (#952 / @goto-bus-stop)
+- build: Upload to CDN when commit starts with “Release” (#989 / @arturi)
+- website: docs fixes and improvements @@AJvanLoon)
+- website: list bundle sizes for each package on stats page (#962 / @goto-bus-stop)
 
 ## 0.26.0
 

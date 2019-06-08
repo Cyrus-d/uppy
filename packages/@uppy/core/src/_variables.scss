@@ -1,19 +1,36 @@
+// Fonts
+$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !default;
 
 // Colors
 
-$color-black: #000 !default;
-$color-gray: #939393 !default;
-$color-pink: #e02177 !default;
-$color-red: #D32F2F !default;
-$color-green: #1BB240 !default;
-$color-orange: #F6A623 !default;
-$color-yellow: #FFD600 !default;
-$color-white: #fff !default;
-$color-almost-white: #FAFAFA !default;
-$color-cornflower-blue: #2275D7 !default;
-$color-asphalt-gray: #525252 !default;
+$white: #fff !default;
+$black: #000 !default;
+$red: #e32437 !default;
+$pomegranate: #ff4b23 !default;
+$orange: #f6a623 !default;
+$yellow: #ffd600 !default;
+$green: #1bb240 !default;
+$blue: #2275d7 !default;
 
-$color-uppy-pink: #EB2177;
+$gray-50: #fafafa !default;
+$gray-100: #f4f4f4 !default;
+$gray-100--highlighted: #f1f3f6 !default;
+$gray-200: #eaeaea !default;
+$gray-250: #dfdfdf !default;
+$gray-300: #cfcfcf !default;
+$gray-400: #bbb !default;
+$gray-500: #939393 !default;
+$gray-600: #757575 !default;
+$gray-700: #525252 !default;
+$gray-800: #333 !default;
+$gray-900: #1f1f1f !default;
+
+$uppy-pink: #eb2177;
+
+// Sizes
+
+$size-focus-outline: 2px;
+$size-focus-offset: 2px;
 
 // Z-index
 
@@ -26,4 +43,4 @@ $zIndex-4: 1004 !default;
 $zIndex-5: 1005 !default;
 
 // Media Queries
-$screen-medium: 'only screen and (min-width: 768px)' !default;
+$screen-medium: 'only screen and (min-width: 820px)' !default;

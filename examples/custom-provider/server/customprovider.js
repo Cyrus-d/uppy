@@ -3,7 +3,7 @@ const path = require('path')
 const DUMM_FILE = path.join(__dirname, 'fixtures/image.jpg')
 
 /**
- * an example of a custom provider module. It implements uppy-server's Provider interface
+ * an example of a custom provider module. It implements @uppy/companion's Provider interface
  */
 class MyCustomProvider {
   constructor (options) {
@@ -20,7 +20,7 @@ class MyCustomProvider {
         entries: [
           { name: 'file1.jpg' },
           { name: 'file2.jpg' },
-          {name: 'file3.jpg'}
+          { name: 'file3.jpg' }
         ]
       }
     }

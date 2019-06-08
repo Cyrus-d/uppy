@@ -2,10 +2,12 @@
 type: docs
 order: 1
 title: "Uppy"
+module: "@uppy/core"
 permalink: docs/uppy/
+category: 'Docs'
 ---
 
-This is the core module that orchestrates everything in Uppy, exposing `state`, `events` and `methods`.
+This is the core module that orchestrates everything in Uppy, managing state and events and providing methods.
 
 ```js
 const Uppy = require('@uppy/core')
@@ -15,16 +17,27 @@ const uppy = Uppy()
 
 ## Installation
 
+Install from NPM:
+
 ```shell
 npm install @uppy/core
 ```
 
+In the [CDN package](/docs/#With-a-script-tag), it is available on the `Uppy` global object:
+
+```js
+const Core = Uppy.Core
+```
+
 ## Options
+
+The Uppy core module has the following configurable options:
 
 ```js
 const uppy = Uppy({
   id: 'uppy',
-  autoProceed: true,
+  autoProceed: false,
+  allowMultipleUploads: true,
   debug: false,
   restrictions: {
     maxFileSize: null,
@@ -35,7 +48,7 @@ const uppy = Uppy({
   meta: {},
   onBeforeFileAdded: (currentFile, files) => currentFile,
   onBeforeUpload: (files) => {},
-  locale: defaultLocale,
+  locale: {},
   store: new DefaultStore()
 })
 ```
@@ -54,9 +67,17 @@ const avatarUploader = Uppy({ id: 'avatar' })
 const photoUploader = Uppy({ id: 'post' })
 ```
 
-### `autoProceed: true`
+### `autoProceed: false`
 
-Uppy will start uploading automatically after the first file is selected.
+By default Uppy will wait for an upload button to be pressed in the UI, or an `.upload()` method to be called, before starting an upload. Setting this to `autoProceed: true` will start uploading automatically after the first file is selected.
+
+### `allowMultipleUploads: true`
+
+Whether to allow multiple upload batches. This means multiple calls to `.upload()`, or a user adding more files after already uploading some. An upload batch is made up of the files that were added since the previous `.upload()` call.
+
+With this option set to `true`, users can upload some files, and then add _more_ files and upload those as well. A model use case for this is uploading images to a gallery or adding attachments to an email.
+
+With this option set to `false`, users can upload some files, and you can listen for the ['complete'](/docs/uppy/#complete) event to continue to the next step in your app's upload flow. A typical use case for this is uploading a new profile picture. If you are integrating with an existing HTML form, this option gives the closest behaviour to a bare `<input type="file">`.
 
 ### `restrictions: {}`
 
@@ -90,7 +111,7 @@ This global metadata is added to each file in Uppy. It can be modified by two me
 
 Metadata from each file is then attached to uploads in [Tus](/docs/tus/) and [XHRUpload](/docs/xhrupload/) plugins.
 
-Metadata can also be added from a `<form>` element on your page, through the [Form](/docs/form/)plugin or through the UI if you are using Dashboard with the [`metaFields`](/docs/dashboard/#metaFields) option.
+Metadata can also be added from a `<form>` element on your page, through the [Form](/docs/form/) plugin or through the UI if you are using Dashboard with the [`metaFields`](/docs/dashboard/#metaFields) option.
 
 <a id="onBeforeFileAdded"></a>
 ### `onBeforeFileAdded: (currentFile, files) => currentFile`
@@ -188,11 +209,25 @@ locale: {
       1: 'You have to select at least %{smart_count} files'
     },
     exceedsSize: 'This file exceeds maximum allowed size of',
-    youCanOnlyUploadFileTypes: 'You can only upload:',
-    uppyServerError: 'Connection with Uppy Server failed'
+    youCanOnlyUploadFileTypes: 'You can only upload: %{types}',
+    companionError: 'Connection with Companion failed'
   }
 }
 ```
+
+Instead of overriding strings yourself, consider using [one of our language packs](https://github.com/transloadit/uppy/tree/master/packages/%40uppy/locales) (or contributing one!):
+
+```js
+const russianLocale = require('@uppy/locales/lib/ru_RU')
+// ^-- OR: import russianLocale from '@uppy/locales/lib/ru_RU'
+const uppy = Uppy({
+  locale: russianLocale,
+})
+```
+
+If you use Uppy from a CDN, [there's an example](/examples/i18n/) showcasing how to change languages.
+
+For flexibility, you can pass a `locale` at the `Uppy`/core level, or to Plugins individually. The locale strings that you set in core take precedence.
 
 It also offers the pluralization function, which is used to determine which string will be used for the provided `smart_count` number.
 
@@ -205,6 +240,7 @@ locale: {
 ```
 
 We are using a forked [Polyglot.js](https://github.com/airbnb/polyglot.js/blob/master/index.js#L37-L60).
+
 
 ### `store: defaultStore()`
 
@@ -228,6 +264,14 @@ const uppy = Uppy()
 uppy.use(DragDrop, { target: 'body' })
 ```
 
+### `uppy.removePlugin(instance)`
+
+Uninstall and remove a plugin.
+
+### `uppy.getPlugin(id)`
+
+Get a plugin by its [`id`](/docs/plugins/#id) to access its methods.
+
 ### `uppy.getID()`
 
 Get the Uppy instance ID, see the [`id` option](#id-39-uppy-39).
@@ -242,13 +286,15 @@ uppy.addFile({
   type: 'image/jpeg', // file type
   data: blob, // file blob
   source: 'Local', // optional, determines the source of the file, for example, Instagram
-  isRemote: false // optional, set to true if actual file is not in the browser, but on some remote server, for example, when using uppy-server in combination with Instagram
+  isRemote: false // optional, set to true if actual file is not in the browser, but on some remote server, for example, when using companion in combination with Instagram
 })
 ```
 
 `addFile` gives an error if the file cannot be added, either because `onBeforeFileAdded(file)` gave an error, or because `uppy.opts.restrictions` checks failed.
 
 If `uppy.opts.autoProceed === true`, Uppy will begin uploading automatically when files are added.
+
+> Sometimes you might need to add a remote file to Uppy. This can be achieved by [fetching the file, then creating a Blob object, or using the Url plugin with Companion](https://github.com/transloadit/uppy/issues/1006#issuecomment-413495493).
 
 ### `uppy.removeFile(fileID)`
 
@@ -310,6 +356,30 @@ uppy.upload().then((result) => {
 })
 ```
 
+### `uppy.pauseResume(fileID)`
+
+Toggle pause/resume on an upload. Will only work if resumable upload plugin, such as [Tus](/docs/tus/), is used.
+
+### `uppy.pauseAll()`
+
+Pause all uploads. Will only work if a resumable upload plugin, such as [Tus](/docs/tus/), is used.
+
+### `uppy.resumeAll()`
+
+Resume all uploads. Will only work if resumable upload plugin, such as [Tus](/docs/tus/), is used.
+
+### `uppy.retryUpload(fileID)`
+
+Retry an upload (after an error, for example).
+
+### `uppy.retryAll()`
+
+Retry all uploads (after an error, for example).
+
+### `uppy.cancelAll()`
+
+Cancel all uploads, reset progress and remove all files.
+
 ### `uppy.setState(patch)`
 
 Update Uppy's internal state. Usually, this method is called internally, but in some cases it might be useful to alter something directly, especially when implementing your own plugins.
@@ -368,6 +438,10 @@ Returns the current state from the [Store](#store-defaultStore).
 Update the state for a single file. This is mostly useful for plugins that may want to store data on file objects, or that need to pass file-specific configurations to other plugins that support it.
 
 `fileID` is the string file ID. `state` is an object that will be merged into the file's state object.
+
+```js
+uppy.getPlugin('Url').addFile('path/to/remote-file.jpg')
+```
 
 ### `uppy.setMeta(data)`
 
@@ -433,6 +507,10 @@ this.info({
 
 Subscribe to an uppy-event. See below for the full list of events.
 
+### `uppy.off('event', action)`
+
+Unsubscribe to an uppy-event. See below for the full list of events.
+
 ## Events
 
 Uppy exposes events that you can subscribe to in your app:
@@ -487,13 +565,23 @@ uppy.on('upload-progress', (file, progress) => {
 
 Fired each time a single upload is completed.
 
+`response` object (depending on the uploader plugin used, it might contain less info, the example is for `@uppy/xhr-upload`):
+
+```js
+{
+  status, // HTTP status code (0, 200, 300)
+  body, // response body
+  uploadURL // the file url, if it was returned
+}
+```
+
 ``` javascript
-uppy.on('upload-success', (file, resp, uploadURL) => {
-  console.log(file.name, uploadURL)
+uppy.on('upload-success', (file, response) => {
+  console.log(file.name, response.uploadURL)
   var img = new Image()
   img.width = 300
-  img.alt = fileId
-  img.src = uploadURL
+  img.alt = file.id
+  img.src = response.uploadURL
   document.body.appendChild(img)
 })
 ```
@@ -517,12 +605,31 @@ Fired when Uppy fails to upload/encode the entire upload. That error is then set
 
 ### `upload-error`
 
-Fired when an error occurs with a specific file:
+Fired each time a single upload has errored.
+
+`response` object (depending on the uploader plugin used, it might contain less info, the example is for `@uppy/xhr-upload`):
+
+```js
+{
+  status, // HTTP status code (0, 200, 300)
+  body // response body
+}
+```
 
 ``` javascript
-uppy.on('upload-error', (file, error) => {
+uppy.on('upload-error', (file, error, response) => {
   console.log('error with file:', file.id)
   console.log('error message:', error)
+})
+```
+
+### `upload-retry`
+
+Fired when an upload has been retried (after an error, for example):
+
+```js
+uppy.on('upload-retry', (fileID) => {
+  console.log('upload retried:', fileID)
 })
 ```
 
@@ -546,3 +653,17 @@ uppy.on('info-visible', () => {
 ### `info-hidden`
 
 Fired when “info” message should be hidden in the UI. See [`info-visible`](#info-visible).
+
+### `cancel-all`
+
+Fired when [`uppy.cancelAll()`]() is called, all uploads are canceled, files removed and progress is reset.
+
+### `restriction-failed`
+
+Fired when a file violates certain restrictions when added. This event is just providing another choice for those who want to customize the behavior of file upload restrictions.
+
+```javascript
+uppy.on('restriction-failed', (file, error) => {
+  // do some customized logic like showing system notice to users
+})
+```

@@ -21,13 +21,19 @@ const metaField = PropTypes.shape({
 })
 const metaFields = PropTypes.arrayOf(metaField)
 
+// A size in pixels (number) or with some other unit (string).
+const cssSize = PropTypes.oneOfType([
+  PropTypes.string,
+  PropTypes.number
+])
+
 // Common props for dashboardy components (Dashboard and DashboardModal).
 const dashboard = {
   uppy,
   inline: PropTypes.bool,
   plugins,
-  width: PropTypes.number,
-  height: PropTypes.number,
+  width: cssSize,
+  height: cssSize,
   showProgressDetails: PropTypes.bool,
   hideUploadButton: PropTypes.bool,
   hideProgressAfterFinish: PropTypes.bool,
@@ -37,6 +43,8 @@ const dashboard = {
   disableStatusBar: PropTypes.bool,
   disableInformer: PropTypes.bool,
   disableThumbnailGenerator: PropTypes.bool,
+  // pass-through to ThumbnailGenerator
+  thumbnailWidth: PropTypes.number,
   locale
 }
 

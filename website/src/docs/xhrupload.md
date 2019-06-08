@@ -1,12 +1,15 @@
 ---
 type: docs
-order: 31
-title: "XHRUpload"
+order: 1
+title: "XHR Upload"
+menu: "XHR"
+module: "@uppy/xhr-upload"
 permalink: docs/xhr-upload/
 alias: docs/xhrupload/
+category: 'Destinations'
 ---
 
-The XHRUpload plugin handles classic HTML multipart form uploads, as well as uploads using the HTTP `PUT` method.
+The `@uppy/xhr-upload` plugin handles classic HTML multipart form uploads, as well as uploads using the HTTP `PUT` method.
 
 ```js
 const XHRUpload = require('@uppy/xhr-upload')
@@ -16,48 +19,60 @@ uppy.use(XHRUpload, {
 })
 ```
 
-[Try it live](/examples/xhrupload/)
+<a class="TryButton" href="/examples/xhrupload/">Try it live</a>
 
 ## Installation
 
 This plugin is published as the `@uppy/xhr-upload` package.
 
+Install from NPM:
+
 ```shell
 npm install @uppy/xhr-upload
 ```
 
+In the [CDN package](/docs/#With-a-script-tag), it is available on the `Uppy` global object:
+
+```js
+const XHRUpload = Uppy.XHRUpload
+```
+
 ## Options
+
+The `@uppy/xhr-upload` plugin has the following configurable options:
 
 ### `id: 'XHRUpload'`
 
-A unique identifier for this plugin. Defaults to `'XHRUpload'`.
+A unique identifier for this plugin. It defaults to `'XHRUpload'`.
 
 ### `endpoint: ''`
 
-URL to upload to.
+The destination URL for your uploads.
 
 ### `method: 'post'`
 
-HTTP method to use for the upload.
+Configures which HTTP method to use for the upload.
 
 ### `formData: true`
 
-Whether to use a multipart form upload, using [FormData][].
+Configures whether or not to use a multipart form upload, using [FormData][].
 This works similarly to using a `<form>` element with an `<input type="file">` for uploads.
-When `true`, file metadata is also sent to the endpoint as separate form fields.
-When `false`, only the file contents are sent.
+When set to `true`, file metadata is also sent to the endpoint as separate form fields.
+When set to `false`, only the file contents are sent.
 
 ### `fieldName: 'files[]'`
 
-When `formData` is true, this is used as the form field name for the file to be uploaded.
+When `formData` is set to true, this is used as the form field name for the file to be uploaded.
 
 ### `metaFields: null`
 
 Pass an array of field names to limit the metadata fields that will be sent to the endpoint as form fields.
-For example, `metaFields: ['name']` will only send the `name` field.
-Passing `null` (the default) will send *all* metadata fields.
 
-If the `formData` option is false, `metaFields` has no effect.
+* Set this to `['name']` to only send the `name` field.
+* Set this to `null` (the default) to send *all* metadata fields.
+* Set this to an empty array `[]` to not send any fields.
+
+If the `formData` option is set to false, `metaFields` has no effect.
 
 ### `headers: {}`
 
@@ -72,9 +87,9 @@ headers: {
 
 ### `bundle: false`
 
-Send all files in a single multipart request. When `bundle` is `true`, `formData` must also be set to `true`.
+Send all files in a single multipart request. When `bundle` is set to `true`, `formData` must also be set to `true`.
 
-> Note: When `bundle` is `true`, file metadata is **not** sent to the endpoint. This is because it's not obvious how metadata should be sent when there are multiple files in a single request. If you need this, please open an issue and we'll try to figure it out together.
+> Note: When `bundle` is set to `true`, file metadata is **not** sent to the endpoint. This is because it is not obvious how metadata should be sent when there are multiple files in a single request. If you need this, please open an issue and we will try to figure it out together.
 
 All files will be appended to the provided `fieldName` field in the request. To upload files on different fields, use [`uppy.setFileState()`](/docs/uppy#uppy-setFileState-fileID-state) to set the `xhrUpload.fieldName` property on the file:
 
@@ -96,9 +111,11 @@ uppy.getFile(fileID).response
 // { status: HTTP status code,
 //   body: extracted response data }
 
-uppy.on('upload-success', (file, body) => {
-  // do something with extracted response data
-  // (`body` is equivalent to `file.response.body` or `uppy.getFile(fileID).response.body`)
+uppy.on('upload-success', (file, response) => {
+  response.status // HTTP status code
+  response.body   // extracted response data
+
+  // do something with file and response
 })
 ```
 
@@ -111,7 +128,7 @@ By default, Uppy assumes the endpoint will return JSON. So, if `POST /upload` re
 }
 ```
 
-That object will be emitted in the `upload-success` event. Not all endpoints respond with JSON. Providing a `getResponseData` function overrides this behavior. The `response` parameter is the `XMLHttpRequest` instance used to upload the file.
+That object will be the value of `response.body`. Not all endpoints respond with JSON. Providing a `getResponseData` function overrides this behavior. The `response` parameter is the `XMLHttpRequest` instance used to upload the file.
 
 For example, an endpoint that responds with an XML document:
 
@@ -125,7 +142,7 @@ getResponseData (responseText, response) {
 
 The `responseText` is the XHR endpoint response as a string. For uploads from the user's device, `response` is the [XMLHttpRequest](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) object.
 
-When uploading files from remote providers such as Dropbox or Instagram, Uppy Server sends upload response data to the client. This is made available in the `getResponseData()` function as well. The `response` object from Uppy Server contains some properties named after their [XMLHttpRequest](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) counterparts:
+When uploading files from remote providers such as Dropbox or Instagram, Companion sends upload response data to the client. This is made available in the `getResponseData()` function as well. The `response` object from Companion contains some properties named after their [XMLHttpRequest](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) counterparts:
 
  - `response.responseText` - the XHR endpoint response as a string;
  - `response.status` - the HTTP status code;
@@ -156,11 +173,15 @@ When no upload progress events have been received for this amount of millisecond
 Note that unlike the [`XMLHttpRequest.timeout`][XHR.timeout] property, this is a timer between progress events: the total upload can take longer than this value.
 Set to `0` to disable this check.
 
-The default is 30 seconds.
+The default for the timeout is 30 seconds.
 
 ### `limit: 0`
 
-Limit the amount of uploads going on at the same time. Passing `0` means no limit.
+Limit the amount of uploads going on at the same time. Setting this to `0` means there is no limit on concurrent uploads.
+
+### `responseType: ''`
+
+The response type expected from the server, determining how the `xhr.response` property should be filled. The `xhr.response` property can be accessed in a custom [`getResponseData()`](#getResponseData-responseText-response) callback. This option sets the [`XMLHttpRequest.responseType][XHR.responseType] property. Only '', 'text', 'arraybuffer', 'blob' and 'document' are widely supported by browsers, so it's recommended to use one of those. The default is the empty string, which is equivalent to 'text' for the `xhr.response` property.
 
 ### `withCredentials: false`
 
@@ -219,7 +240,7 @@ $file_name = $_POST['name']; // desired name of the file
 move_uploaded_file($file_path, './img/' . basename($file_name)); // save the file in `img/`
 ```
 
-Note how we're using `$_POST['name']` instead of `$my_file['name']`. `$my_file['name']` contains the original name of the file on the user's device. `$_POST['name']` contains the `name` metadata value for the uploaded file, which can be edited by the user using the [Dashboard](/docs/dashboard).
+Note how we are using `$_POST['name']` instead of `$my_file['name']`. `$my_file['name']` contains the original name of the file on the user's device. `$_POST['name']` contains the `name` metadata value for the uploaded file, which can be edited by the user using the [Dashboard](/docs/dashboard).
 
 Set a custom `fieldName` to make working with the `$_FILES` array a bit less convoluted:
 
@@ -242,5 +263,6 @@ move_uploaded_file($file_path, './img/' . basename($file_name)); // save the fil
 
 [FormData]: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 [XHR.timeout]: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/timeout
+[XHR.responseType]: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType
 [PHP.file-upload]: https://secure.php.net/manual/en/features.file-upload.php
 [PHP.multiple]: https://secure.php.net/manual/en/features.file-upload.multiple.php

@@ -45,15 +45,20 @@ module.exports = class Plugin {
 
   getPluginState () {
     const { plugins } = this.uppy.getState()
-    return plugins[this.id]
+    return plugins[this.id] || {}
   }
 
   setPluginState (update) {
-    const plugins = Object.assign({}, this.uppy.getState().plugins)
-    plugins[this.id] = Object.assign({}, plugins[this.id], update)
+    const { plugins } = this.uppy.getState()
 
     this.uppy.setState({
-      plugins: plugins
+      plugins: {
+        ...plugins,
+        [this.id]: {
+          ...plugins[this.id],
+          ...update
+        }
+      }
     })
   }
 
@@ -65,6 +70,16 @@ module.exports = class Plugin {
     if (this._updateUI) {
       this._updateUI(state)
     }
+  }
+
+  /**
+  * Called when plugin is mounted, whether in DOM or into another plugin.
+  * Needed because sometimes plugins are mounted separately/after `install`,
+  * so this.el and this.parent might not be available in `install`.
+  * This is the case with @uppy/react plugins, for example.
+  */
+  onMount () {
+
   }
 
   /**
@@ -102,6 +117,7 @@ module.exports = class Plugin {
 
       this.el = preact.render(this.render(this.uppy.getState()), targetElement)
 
+      this.onMount()
       return this.el
     }
 
@@ -122,14 +138,18 @@ module.exports = class Plugin {
     }
 
     if (targetPlugin) {
-      const targetPluginName = targetPlugin.id
-      this.uppy.log(`Installing ${callerPluginName} to ${targetPluginName}`)
+      this.uppy.log(`Installing ${callerPluginName} to ${targetPlugin.id}`)
+      this.parent = targetPlugin
       this.el = targetPlugin.addTarget(plugin)
+
+      this.onMount()
       return this.el
     }
 
     this.uppy.log(`Not installing ${callerPluginName}`)
-    throw new Error(`Invalid target option given to ${callerPluginName}`)
+    throw new Error(`Invalid target option given to ${callerPluginName}. Please make sure that the element 
+      exists on the page, or that the plugin you are targeting has been installed. Check that the <script> tag initializing Uppy 
+      comes at the bottom of the page, before the closing </body> tag (see https://github.com/transloadit/uppy/issues/1042).`)
   }
 
   render (state) {

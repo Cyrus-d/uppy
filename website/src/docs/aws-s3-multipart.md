@@ -1,17 +1,19 @@
 ---
 type: docs
-order: 33
-title: "AwsS3Multipart"
+order: 3
+title: "AWS S3 Multipart"
+module: "@uppy/aws-s3-multipart"
 permalink: docs/aws-s3-multipart/
+category: 'Destinations'
 ---
 
-The `AwsS3Multipart` plugin can be used to upload files directly to an S3 bucket using S3's Multipart upload strategy. With this strategy, files are chopped up in parts of 5MB+ each, so they can be uploaded concurrently. It's also very reliable: if a single part fails to upload, only that 5MB has to be retried.
+The `@uppy/aws-s3-multipart` plugin can be used to upload files directly to an S3 bucket using S3's Multipart upload strategy. With this strategy, files are chopped up in parts of 5MB+ each, so they can be uploaded concurrently. It is also very reliable: if a single part fails to upload, only that 5MB chunk has to be retried.
 
 ```js
 const AwsS3Multipart = require('@uppy/aws-s3-multipart')
 uppy.use(AwsS3Multipart, {
   limit: 4,
-  serverUrl: 'https://uppy-server.myapp.net/'
+  companionUrl: 'https://uppy-companion.myapp.net/'
 })
 ```
 
@@ -19,19 +21,29 @@ uppy.use(AwsS3Multipart, {
 
 This plugin is published as the `@uppy/aws-s3-multipart` package.
 
+Install from NPM:
+
 ```shell
 npm install @uppy/aws-s3-multipart
 ```
 
+In the [CDN package](/docs/#With-a-script-tag), it is available on the `Uppy` global object:
+
+```js
+const AwsS3Multipart = Uppy.AwsS3Multipart
+```
+
 ## Options
+
+The `@uppy/aws-s3-multipart` plugin has the following configurable options:
 
 ### limit: 0
 
-The maximum amount of chunks to upload simultaneously. `0` means unlimited.
+The maximum amount of chunks to upload simultaneously. Set to `0` to disable limiting.
 
-### serverUrl: null
+### companionUrl: null
 
-The Uppy Server URL to use to proxy calls to the S3 Multipart API.
+The Companion URL to use for proxying calls to the S3 Multipart API.
 
 ### createMultipartUpload(file)
 
@@ -42,7 +54,7 @@ Return a Promise for an object with keys:
  - `uploadId` - The UploadID returned by S3.
  - `key` - The object key for the file. This needs to be returned to allow it to be different from the `file.name`.
 
-The default implementation calls out to Uppy Server's S3 signing endpoints.
+The default implementation calls out to Companion's S3 signing endpoints.
 
 ### listParts(file, { uploadId, key })
 
@@ -57,7 +69,7 @@ Return a Promise for an array of S3 Part objects, as returned by the S3 Multipar
  - `Size` - The size of the part in bytes.
  - `ETag` - The ETag of the part, used to identify it when completing the multipart upload and combining all parts into a single file.
 
-The default implementation calls out to Uppy Server's S3 signing endpoints.
+The default implementation calls out to Companion's S3 signing endpoints.
 
 ### prepareUploadPart(file, partData)
 
@@ -78,8 +90,8 @@ Return a Promise for an object with keys:
      Key: partData.key,
      UploadId: partData.uploadId,
      PartNumber: partData.number,
-     Body: '', // Empty, because it's uploaded later
-     Expires: Date.now() + 5 * 60 * 1000
+     Body: '', // Empty, because it is uploaded later
+     Expires: 5 * 60,
    }, (err, url) => { /* there's the url! */ })
    ```
 
@@ -92,7 +104,7 @@ A function that calls the S3 Multipart API to abort a Multipart upload, and dele
 
 This is typically called when the user cancels an upload. Cancellation cannot fail in Uppy, so the result of this function is ignored.
 
-The default implementation calls out to Uppy Server's S3 signing endpoints.
+The default implementation calls out to Companion's S3 signing endpoints.
 
 ### completeMultipartUpload(file, { uploadId, key, parts })
 
@@ -106,7 +118,7 @@ Return a Promise for an object with properties:
 
  - `location` - **(Optional)** A publically accessible URL to the object in the S3 bucket.
 
-The default implementation calls out to Uppy Server's S3 signing endpoints.
+The default implementation calls out to Companion's S3 signing endpoints.
 
 ## S3 Bucket Configuration
 
@@ -114,14 +126,16 @@ S3 buckets do not allow public uploads by default.  In order to allow Uppy to up
 
 This process is described in the [AwsS3 documentation](/docs/aws-s3/#S3-Bucket-configuration).
 
-On top of the configuration mentioned there, the `ETag` header must also be whitelisted:
+While the Uppy AWS S3 plugin uses `POST` requests while uploading files to an S3 bucket, the AWS S3 Multipart plugin uses `PUT` requests when uploading file parts. Additionally, the `ETag` header must also be whitelisted:
 
 ```xml
 <CORSRule>
+  <!-- Change from POST to PUT if you followed the docs for the AWS S3 plugin ... -->
   <AllowedMethod>PUT</AllowedMethod>
-  <!-- ... all your existingCORS config goes here ... -->
+  
+  <!-- ... keep the existing MaxAgeSeconds and AllowedHeader lines and your other stuff ... -->
 
-  <!-- The magic: -->
+  <!-- ... and don't forget to add this tag. -->
   <ExposeHeader>ETag</ExposeHeader>
 </CORSRule>
 ```

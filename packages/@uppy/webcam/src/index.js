@@ -11,7 +11,9 @@ const PermissionsScreen = require('./PermissionsScreen')
 // Setup getUserMedia, with polyfill for older browsers
 // Adapted from: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
 function getMediaDevices () {
+  // eslint-disable-next-line compat/compat
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    // eslint-disable-next-line compat/compat
     return navigator.mediaDevices
   }
 
@@ -33,22 +35,26 @@ function getMediaDevices () {
  * Webcam
  */
 module.exports = class Webcam extends Plugin {
+  static VERSION = require('../package.json').version
+
   constructor (uppy, opts) {
     super(uppy, opts)
     this.mediaDevices = getMediaDevices()
     this.supportsUserMedia = !!this.mediaDevices
     this.protocol = location.protocol.match(/https/i) ? 'https' : 'http'
     this.id = this.opts.id || 'Webcam'
-    this.title = 'Camera'
+    this.title = this.opts.title || 'Camera'
     this.type = 'acquirer'
     this.icon = CameraIcon
 
-    const defaultLocale = {
+    this.defaultLocale = {
       strings: {
         smile: 'Smile!',
         takePicture: 'Take a picture',
         startRecording: 'Begin video recording',
-        stopRecording: 'Stop video recording'
+        stopRecording: 'Stop video recording',
+        allowAccessTitle: 'Please allow access to your camera',
+        allowAccessDescription: 'In order to take pictures or record video with your camera, please allow camera access for this site.'
       }
     }
 
@@ -56,7 +62,6 @@ module.exports = class Webcam extends Plugin {
     const defaultOptions = {
       onBeforeSnapshot: () => Promise.resolve(),
       countdown: false,
-      locale: defaultLocale,
       modes: [
         'video-audio',
         'video-only',
@@ -70,12 +75,10 @@ module.exports = class Webcam extends Plugin {
     // merge default options with the ones set by user
     this.opts = Object.assign({}, defaultOptions, opts)
 
-    this.locale = Object.assign({}, defaultLocale, this.opts.locale)
-    this.locale.strings = Object.assign({}, defaultLocale.strings, this.opts.locale.strings)
-
     // i18n
-    this.translator = new Translator({locale: this.locale})
+    this.translator = new Translator([ this.defaultLocale, this.uppy.locale, this.opts.locale ])
     this.i18n = this.translator.translate.bind(this.translator)
+    this.i18nArray = this.translator.translateArray.bind(this.translator)
 
     this.install = this.install.bind(this)
     this.setPluginState = this.setPluginState.bind(this)
@@ -170,19 +173,21 @@ module.exports = class Webcam extends Plugin {
         isRecording: false
       })
       return this.getVideo()
-    })
-    .then((file) => {
+    }).then((file) => {
       try {
         this.uppy.addFile(file)
       } catch (err) {
         // Nothing, restriction errors handled in Core
       }
-    })
-    .then(() => {
+    }).then(() => {
       this.recordingChunks = null
       this.recorder = null
-      const dashboard = this.uppy.getPlugin('Dashboard')
-      if (dashboard) dashboard.hideAllPanels()
+
+      // Close the Dashboard panel if plugin is installed
+      // into Dashboard (could be other parent UI plugin)
+      // if (this.parent && this.parent.hideAllPanels) {
+      //   this.parent.hideAllPanels()
+      // }
     }, (error) => {
       this.recordingChunks = null
       this.recorder = null
@@ -240,8 +245,11 @@ module.exports = class Webcam extends Plugin {
       return this.getImage()
     }).then((tagFile) => {
       this.captureInProgress = false
-      const dashboard = this.uppy.getPlugin('Dashboard')
-      if (dashboard) dashboard.hideAllPanels()
+      // Close the Dashboard panel if plugin is installed
+      // into Dashboard (could be other parent UI plugin)
+      // if (this.parent && this.parent.hideAllPanels) {
+      //   this.parent.hideAllPanels()
+      // }
       try {
         this.uppy.addFile(tagFile)
       } catch (err) {
@@ -284,7 +292,7 @@ module.exports = class Webcam extends Plugin {
       return {
         source: this.id,
         name: name,
-        data: new File([blob], name, { type: mimeType }),
+        data: new Blob([blob], { type: mimeType }),
         type: mimeType
       }
     })
@@ -303,7 +311,7 @@ module.exports = class Webcam extends Plugin {
     const file = {
       source: this.id,
       name: name,
-      data: new File([blob], name, { type: mimeType }),
+      data: new Blob([blob], { type: mimeType }),
       type: mimeType
     }
 
@@ -311,7 +319,7 @@ module.exports = class Webcam extends Plugin {
   }
 
   focus () {
-    if (this.opts.countdown) return
+    if (!this.opts.countdown) return
     setTimeout(() => {
       this.uppy.info(this.i18n('smile'), 'success', 1500)
     }, 1000)
@@ -325,7 +333,9 @@ module.exports = class Webcam extends Plugin {
     const webcamState = this.getPluginState()
 
     if (!webcamState.cameraReady) {
-      return <PermissionsScreen icon={CameraIcon} />
+      return <PermissionsScreen
+        icon={CameraIcon}
+        i18n={this.i18n} />
     }
 
     return <CameraScreen

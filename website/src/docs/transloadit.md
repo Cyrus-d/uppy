@@ -1,13 +1,19 @@
 ---
 type: docs
-order: 34
+order: 10
 title: "Transloadit"
+module: "@uppy/transloadit"
 permalink: docs/transloadit/
+category: 'File Processing'
 ---
 
-The Transloadit plugin can be used to upload files to [Transloadit](https://transloadit.com/) for all kinds of processing, such as transcoding video, resizing images, zipping/unzipping, [and more](https://transloadit.com/services/).
+The `@uppy/transloadit` plugin can be used to upload files to [Transloadit](https://transloadit.com/) for all kinds of processing, such as transcoding video, resizing images, zipping/unzipping, [and much more](https://transloadit.com/services/).
 
-[Try it live](/examples/transloadit/)
+> If you're okay to trade some flexibility for ergonomics, consider using
+> the [Robodog](/docs/robodog/) Plugin instead, which is a higher-level abstraction for
+> encoding files with Uppy and Transloadit.
+
+<a class="TryButton" href="/examples/transloadit/">Try it live</a>
 
 ```js
 const Transloadit = require('@uppy/transloadit')
@@ -24,52 +30,83 @@ uppy.use(Transloadit, {
 })
 ```
 
-As of Uppy 0.24 the Transloadit plugin includes the [Tus](/docs/tus) plugin to handle the uploading, so you no longer have to add it manually.
+As of Uppy version 0.24, the Transloadit plugin includes the [Tus](/docs/tus) plugin to handle the uploading, so you no longer have to add it manually.
 
 ## Installation
 
 This plugin is published as the `@uppy/transloadit` package.
 
+Install from NPM:
+
 ```shell
 npm install @uppy/transloadit
 ```
 
+In the [CDN package](/docs/#With-a-script-tag), it is available on the `Uppy` global object:
+
+```js
+const Transloadit = Uppy.Transloadit
+```
+
 ## Properties
 
-### `Transloadit.UPPY_SERVER`
+### `Transloadit.COMPANION`
 
-The main endpoint for Transloadit's hosted uppy-servers. You can use this constant in remote provider options, like so:
+The main endpoint for Transloadit's hosted companions. You can use this constant in remote provider options, like so:
 
 ```js
 const Dropbox = require('@uppy/dropbox')
 const Transloadit = require('@uppy/transloadit')
 
 uppy.use(Dropbox, {
-  serverUrl: Transloadit.UPPY_SERVER
+  companionUrl: Transloadit.COMPANION
+  companionAllowedHosts: Transloadit.COMPANION_PATTERN
 })
 ```
 
-The value of this constant is `https://api2.transloadit.com/uppy-server`. If you are using a custom [`service`](#service) option, you should also set a custom host option in your provider plugins, by taking a Transloadit API url and appending `/uppy-server`:
+When using `Transloadit.COMPANION`, you should also configure [`companionAllowedHosts: Transloadit.COMPANION_PATTERN`](#Transloadit-COMPANION-PATTERN).
+
+The value of this constant is `https://api2.transloadit.com/companion`. If you are using a custom [`service`](#service) option, you should also set a custom host option in your provider plugins, by taking a Transloadit API url and appending `/companion`:
 
 ```js
 uppy.use(Dropbox, {
-  serverUrl: 'https://api2-us-east-1.transloadit.com/uppy-server'
+  companionUrl: 'https://api2-us-east-1.transloadit.com/companion'
 })
 ```
 
+### `Transloadit.COMPANION_PATTERN`
+
+A RegExp pattern matching Transloadit's hosted companion endpoints. The pattern is used in remote provider `companionAllowedHosts` options, to ensure that third party authentication messages cannot be faked by an attacker's page, but can only originate from Transloadit's servers.
+
+Use it whenever you use `companionUrl: Transloadit.COMPANION`, like so:
+
+```js
+const Dropbox = require('@uppy/dropbox')
+const Transloadit = require('@uppy/transloadit')
+
+uppy.use(Dropbox, {
+  companionUrl: Transloadit.COMPANION
+  companionAllowedHosts: Transloadit.COMPANION_PATTERN
+})
+```
+
+The value of this constant covers _all_ Transloadit's Companion servers, so it does not need to be changed if you are using a custom [`service`](#service) option. However, if you are not using the Transloadit Companion servers at `*.transloadit.com`, make sure to set the `companionAllowedHosts` option to something that matches what you do use.
+
 ## Options
+
+The `@uppy/transloadit` plugin has the following configurable options:
 
 ### `id: 'Transloadit'`
 
-A unique identifier for this plugin. Defaults to `'Transloadit'`.
+A unique identifier for this plugin. It defaults to `'Transloadit'`.
 
 ### `service`
 
-The Transloadit API URL to use. Defaults to `https://api2.transloadit.com`, which will attempt to route traffic efficiently based on where your users are. You can set this to something like `https://api2-us-east-1.transloadit.com` if you want to use a particular region.
+The Transloadit API URL to use. It defaults to `https://api2.transloadit.com`, which will attempt to route traffic efficiently based on the location of your users. You can set this to something like `https://api2-us-east-1.transloadit.com` if you want to use a particular region.
 
 ### `params`
 
-The Assembly parameters to use for the upload. See the Transloadit documentation on [Assembly Instructions](https://transloadit.com/docs/#14-assembly-instructions). `params` should be a plain JavaScript object, or a JSON string if you are using the [`signature`](#signature) option.
+The Assembly parameters to use for the upload. See the Transloadit documentation on [Assembly Instructions](https://transloadit.com/docs/#14-assembly-instructions) for further information. `params` should be a plain JavaScript object, or a JSON string if you are using the [`signature`](#signature) option.
 
 The `auth.key` Assembly parameter is required. You can also use the `steps` or `template_id` options here as described in the Transloadit documentation.
 
@@ -94,15 +131,15 @@ uppy.use(Transloadit, {
 
 ### `waitForEncoding`
 
-Whether to wait for all Assemblies to complete before completing the upload.
+Configures whether or not to wait for all Assemblies to complete before completing the upload.
 
 ### `waitForMetadata`
 
-Whether to wait for metadata to be extracted from uploaded files before completing the upload. If `waitForEncoding` is enabled, this has no effect.
+Configures whether or not to wait for metadata to be extracted from uploaded files before completing the upload. If `waitForEncoding` is enabled, this has no effect.
 
 ### `importFromUploadURLs`
 
-Instead of uploading to Transloadit's servers directly, allow another plugin to upload files, and then import those files into the Transloadit Assembly. Default `false`.
+Instead of uploading to Transloadit's servers directly, allow another plugin to upload files, and then import those files into the Transloadit Assembly. This is set to `false` by default.
 
 When enabling this option, Transloadit will *not* configure the Tus plugin to upload to Transloadit. Instead, a separate upload plugin must be used. Once the upload completes, the Transloadit plugin adds the uploaded file to the Assembly.
 
@@ -123,15 +160,15 @@ uppy.use(Transloadit, {
 })
 ```
 
-In order for this to work, the upload plugin must assign a publically accessible `uploadURL` property to the uploaded file object. The Tus and S3 plugins both do this—for the XHRUpload plugin, you may have to specify a custom `getUploadResponse` function.
+In order for this to work, the upload plugin must assign a publically accessible `uploadURL` property to the uploaded file object. The Tus and S3 plugins both do this automatically. For the XHRUpload plugin, you may have to specify a custom `getUploadResponse` function.
 
 ### `alwaysRunAssembly`
 
-When true, always create and run an Assembly when `uppy.upload()` is called, even if no files were selected. This allows running Assemblies that do not receive files, but instead use a robot like [`/s3/import`](https://transloadit.com/docs/transcoding/#s3-import) to download the files from elsewhere, for example for a bulk transcoding job.
+When set to true, always create and run an Assembly when `uppy.upload()` is called, even if no files were selected. This allows running Assemblies that do not receive files, but instead use a robot like [`/s3/import`](https://transloadit.com/docs/transcoding/#s3-import) to download the files from elsewhere, for example, for a bulk transcoding job.
 
 ### `signature`
 
-An optional signature for the Assembly parameters. See the Transloadit documentation on [Signature Authentication](https://transloadit.com/docs/#26-signature-authentication).
+An optional signature for the Assembly parameters. See the Transloadit documentation on [Signature Authentication](https://transloadit.com/docs/#26-signature-authentication) for further information.
 
 If a `signature` is provided, `params` should be a JSON string instead of a JavaScript object, as otherwise the generated JSON in the browser may be different from the JSON string that was used to generate the signature.
 
@@ -232,9 +269,21 @@ strings: {
   // Shown if an Assembly could not be created.
   creatingAssemblyFailed: 'Transloadit: Could not create Assembly',
   // Shown after uploads have succeeded, but when the Assembly is still executing.
-  // This only shows if `waitForMetadata` or `waitForEncoding` was set.
+  // This only shows if `waitForMetadata` or `waitForEncoding` was enabled.
   encoding: 'Encoding...'
 }
+```
+
+## Errors
+
+If an error occurs when an Assembly has already started, you can find the Assembly Status on the error object's `assembly` property.
+
+```js
+uppy.on('error', (error) => {
+  if (error.assembly) {
+    console.log(`${error.assembly.assembly_id} failed!`)
+  }
+})
 ```
 
 ## Events
@@ -265,15 +314,15 @@ Fired when Transloadit has received an upload.
 **Parameters**
 
   - `file` - The Transloadit file object that was uploaded.
-  - `assembly` - The [Assembly Status][assembly-status] of the Assembly the file was uploaded to.
+  - `assembly` - The [Assembly Status][assembly-status] of the Assembly to which the file was uploaded.
 
 ### `transloadit:assembly-executing`
 
-Fired when Transloadit has received all uploads, and is now executing the Assembly.
+Fired when Transloadit has received all uploads, and is currently executing the Assembly.
 
 **Parameters**
 
- - `assembly` - The [Assembly Status](https://transloadit.com/docs/api-docs/#assembly-status-response) of the Assembly that is now executing.
+ - `assembly` - The [Assembly Status](https://transloadit.com/docs/api-docs/#assembly-status-response) of the Assembly that is currently executing.
 
 ### `transloadit:result`
 

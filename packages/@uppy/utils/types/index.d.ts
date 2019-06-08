@@ -1,5 +1,3 @@
-import { UppyFile } from '@uppy/core';
-
 declare module '@uppy/utils/lib/Translator' {
   export interface TranslatorOptions {
     locale: {
@@ -28,13 +26,15 @@ declare module '@uppy/utils/lib/dataURItoFile' {
 }
 
 declare module '@uppy/utils/lib/emitSocketProgress' {
+  import UppyUtils = require('@uppy/utils');
+
   interface ProgressData {
     progress: number;
     bytesUploaded: number;
     bytesTotal: number;
   }
 
-  export default function emitSocketProgress(uploader: object, progressData: ProgressData, file: UppyFile): void;
+  export default function emitSocketProgress(uploader: object, progressData: ProgressData, file: UppyUtils.UppyFile): void;
 }
 
 declare module '@uppy/utils/lib/findAllDOMElements' {
@@ -46,7 +46,9 @@ declare module '@uppy/utils/lib/findDOMElement' {
 }
 
 declare module '@uppy/utils/lib/generateFileID' {
-  export default function generateFileID(file: UppyFile): string;
+  import UppyUtils = require('@uppy/utils');
+
+  export default function generateFileID(file: UppyUtils.UppyFile): string;
 }
 
 declare module '@uppy/utils/lib/getBytesRemaining' {
@@ -62,7 +64,9 @@ declare module '@uppy/utils/lib/getFileNameAndExtension' {
 }
 
 declare module '@uppy/utils/lib/getFileType' {
-  export default function getFileType(file: UppyFile): string | null;
+  import UppyUtils = require('@uppy/utils');
+
+  export default function getFileType(file: UppyUtils.UppyFile): string | null;
 }
 
 declare module '@uppy/utils/lib/getFileTypeExtension' {
@@ -87,6 +91,10 @@ declare module '@uppy/utils/lib/isDOMElement' {
 
 declare module '@uppy/utils/lib/isObjectURL' {
   export default function isObjectURL(url: string): boolean;
+}
+
+declare module '@uppy/utils/lib/isDragDropSupported' {
+  export default function isDragDropSupported(): boolean;
 }
 
 declare module '@uppy/utils/lib/isPreviewSupported' {
@@ -120,4 +128,48 @@ declare module '@uppy/utils/lib/settle' {
 
 declare module '@uppy/utils/lib/toArray' {
   export default function toArray(list: any): any[];
+}
+
+declare module '@uppy/utils/lib/getDroppedFiles' {
+  export default function getDroppedFiles(dataTransfer: DataTransfer): Promise<File[]>;
+}
+
+declare module '@uppy/utils' {
+  interface IndexedObject<T> {
+    [key: string]: T;
+    [key: number]: T;
+  }
+  export interface UppyFile<TMeta extends IndexedObject<any> = {}> {
+    data: Blob | File;
+    extension: string;
+    id: string;
+    isPaused?: boolean;
+    isRemote: boolean;
+    meta: {
+      name: string;
+      type?: string;
+    } & TMeta;
+    name: string;
+    preview?: string;
+    progress?: {
+      uploadStarted: number | null;
+      uploadComplete: boolean;
+      percentage: number;
+      bytesUploaded: number;
+      bytesTotal: number;
+    };
+    remote?: {
+      host: string;
+      url: string;
+      body?: object;
+    };
+    size: number;
+    source?: string;
+    type?: string;
+  }
+  export interface Store {
+    getState(): object;
+    setState(patch: object): void;
+    subscribe(listener: any): () => void;
+  }
 }

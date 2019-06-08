@@ -5,7 +5,7 @@
 <a href="https://www.npmjs.com/package/@uppy/aws-s3"><img src="https://img.shields.io/npm/v/@uppy/aws-s3.svg?style=flat-square"></a>
 <a href="https://travis-ci.org/transloadit/uppy"><img src="https://img.shields.io/travis/transloadit/uppy/master.svg?style=flat-square" alt="Build Status"></a>
 
-The AwsS3 plugin can be used to upload files directly to an S3 bucket. Uploads can be signed using Uppy Server or a custom signing function.
+The AwsS3 plugin can be used to upload files directly to an S3 bucket. Uploads can be signed using Companion or a custom signing function.
 
 Uppy is being developed by the folks at [Transloadit](https://transloadit.com), a versatile file encoding service.
 
@@ -19,7 +19,7 @@ const uppy = Uppy()
 uppy.use(AwsS3, {
   limit: 2,
   timeout: ms('1 minute'),
-  serverUrl: 'https://uppy-server.myapp.com/'
+  companionUrl: 'https://companion.myapp.com/'
 })
 ```
 
@@ -29,7 +29,7 @@ uppy.use(AwsS3, {
 $ npm install @uppy/aws-s3 --save
 ```
 
-We recommend installing from npm and then using a module bundler such as [Webpack](http://webpack.github.io/), [Browserify](http://browserify.org/) or [Rollup.js](http://rollupjs.org/).
+We recommend installing from npm and then using a module bundler such as [Webpack](https://webpack.js.org/), [Browserify](http://browserify.org/) or [Rollup.js](http://rollupjs.org/).
 
 Alternatively, you can also use this plugin in a pre-built bundle from Transloadit's CDN: Edgly. In that case `Uppy` will attach itself to the global `window.Uppy` object. See the [main Uppy documentation](https://uppy.io/docs/#Installation) for instructions.
 

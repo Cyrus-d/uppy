@@ -2,6 +2,7 @@ const resolveUrl = require('resolve-url')
 const { Plugin } = require('@uppy/core')
 const Translator = require('@uppy/utils/lib/Translator')
 const limitPromises = require('@uppy/utils/lib/limitPromises')
+const { RequestClient } = require('@uppy/companion-client')
 const XHRUpload = require('@uppy/xhr-upload')
 
 function isXml (xhr) {
@@ -9,14 +10,33 @@ function isXml (xhr) {
   return typeof contentType === 'string' && contentType.toLowerCase() === 'application/xml'
 }
 
+function getXmlValue (source, key) {
+  const start = source.indexOf(`<${key}>`)
+  const end = source.indexOf(`</${key}>`, start)
+  return start !== -1 && end !== -1
+    ? source.slice(start + key.length + 2, end)
+    : ''
+}
+
+function assertServerError (res) {
+  if (res && res.error) {
+    const error = new Error(res.message)
+    Object.assign(error, res.error)
+    throw error
+  }
+  return res
+}
+
 module.exports = class AwsS3 extends Plugin {
+  static VERSION = require('../package.json').version
+
   constructor (uppy, opts) {
     super(uppy, opts)
     this.type = 'uploader'
     this.id = 'AwsS3'
     this.title = 'AWS S3'
 
-    const defaultLocale = {
+    this.defaultLocale = {
       strings: {
         preparingUpload: 'Preparing upload...'
       }
@@ -25,16 +45,17 @@ module.exports = class AwsS3 extends Plugin {
     const defaultOptions = {
       timeout: 30 * 1000,
       limit: 0,
-      getUploadParameters: this.getUploadParameters.bind(this),
-      locale: defaultLocale
+      getUploadParameters: this.getUploadParameters.bind(this)
     }
 
-    this.opts = Object.assign({}, defaultOptions, opts)
-    this.locale = Object.assign({}, defaultLocale, this.opts.locale)
-    this.locale.strings = Object.assign({}, defaultLocale.strings, this.opts.locale.strings)
+    this.opts = { ...defaultOptions, ...opts }
 
-    this.translator = new Translator({ locale: this.locale })
+    // i18n
+    this.translator = new Translator([ this.defaultLocale, this.uppy.locale, this.opts.locale ])
     this.i18n = this.translator.translate.bind(this.translator)
+    this.i18nArray = this.translator.translateArray.bind(this.translator)
+
+    this.client = new RequestClient(uppy, opts)
 
     this.prepareUpload = this.prepareUpload.bind(this)
 
@@ -46,16 +67,14 @@ module.exports = class AwsS3 extends Plugin {
   }
 
   getUploadParameters (file) {
-    if (!this.opts.serverUrl) {
-      throw new Error('Expected a `serverUrl` option containing an uppy-server address.')
+    if (!this.opts.companionUrl) {
+      throw new Error('Expected a `companionUrl` option containing a Companion address.')
     }
 
-    const filename = encodeURIComponent(file.name)
-    const type = encodeURIComponent(file.type)
-    return fetch(`${this.opts.serverUrl}/s3/params?filename=${filename}&type=${type}`, {
-      method: 'get',
-      headers: { accept: 'application/json' }
-    }).then((response) => response.json())
+    const filename = encodeURIComponent(file.meta.name)
+    const type = encodeURIComponent(file.meta.type)
+    return this.client.get(`s3/params?filename=${filename}&type=${type}`)
+      .then(assertServerError)
   }
 
   validateParameters (file, params) {
@@ -107,7 +126,7 @@ module.exports = class AwsS3 extends Plugin {
       const updatedFiles = {}
       fileIDs.forEach((id, index) => {
         const file = this.uppy.getFile(id)
-        if (file.error) {
+        if (!file || file.error) {
           return
         }
 
@@ -121,7 +140,7 @@ module.exports = class AwsS3 extends Plugin {
           method,
           formData: method.toLowerCase() === 'post',
           endpoint: url,
-          metaFields: Object.keys(fields)
+          metaFields: fields ? Object.keys(fields) : []
         }
 
         if (headers) {
@@ -157,6 +176,7 @@ module.exports = class AwsS3 extends Plugin {
       responseUrlFieldName: 'location',
       timeout: this.opts.timeout,
       limit: this.opts.limit,
+      responseType: 'text',
       // Get the response data from a successful XMLHttpRequest instance.
       // `content` is the S3 response as a string.
       // `xhr` is the XMLHttpRequest instance.
@@ -175,37 +195,24 @@ module.exports = class AwsS3 extends Plugin {
             return { location: null }
           }
 
+          // responseURL is not available in older browsers.
+          if (!xhr.responseURL) {
+            return { location: null }
+          }
+
           // Trim the query string because it's going to be a bunch of presign
           // parameters for a PUT request—doing a GET request with those will
           // always result in an error
           return { location: xhr.responseURL.replace(/\?.*$/, '') }
         }
 
-        let getValue = () => ''
-        if (xhr.responseXML) {
-          getValue = (key) => {
-            const el = xhr.responseXML.querySelector(key)
-            return el ? el.textContent : ''
-          }
-        }
-
-        if (xhr.responseText) {
-          getValue = (key) => {
-            const start = xhr.responseText.indexOf(`<${key}>`)
-            const end = xhr.responseText.indexOf(`</${key}>`)
-            return start !== -1 && end !== -1
-              ? xhr.responseText.slice(start + key.length + 2, end)
-              : ''
-          }
-        }
-
         return {
           // Some S3 alternatives do not reply with an absolute URL.
           // Eg DigitalOcean Spaces uses /$bucketName/xyz
-          location: resolveUrl(xhr.responseURL, getValue('Location')),
-          bucket: getValue('Bucket'),
-          key: getValue('Key'),
-          etag: getValue('ETag')
+          location: resolveUrl(xhr.responseURL, getXmlValue(content, 'Location')),
+          bucket: getXmlValue(content, 'Bucket'),
+          key: getXmlValue(content, 'Key'),
+          etag: getXmlValue(content, 'ETag')
         }
       },
 
@@ -217,8 +224,8 @@ module.exports = class AwsS3 extends Plugin {
         if (!isXml(xhr)) {
           return
         }
-        const error = xhr.responseXML.querySelector('Error > Message')
-        return new Error(error.textContent)
+        const error = getXmlValue(content, 'Message')
+        return new Error(error)
       }
     })
   }
