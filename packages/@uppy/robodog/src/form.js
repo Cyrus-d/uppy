@@ -8,7 +8,26 @@ const addDashboardPlugin = require('./addDashboardPlugin')
 const addTransloaditPlugin = require('./addTransloaditPlugin')
 const addProviders = require('./addProviders')
 
+const defaultLocaleStrings = {
+  chooseFiles: 'Choose files'
+}
+
+function mergeDefaultLocale (defaults, userProvided = {}) {
+  const strings = userProvided.strings || {}
+  return {
+    ...userProvided,
+    strings: { ...defaults, ...strings }
+  }
+}
+
 function form (target, opts) {
+  if (!opts) throw new TypeError('robodog.form: must provide an options object')
+
+  opts = {
+    ...opts,
+    locale: mergeDefaultLocale(defaultLocaleStrings, opts.locale)
+  }
+
   const uppy = Uppy(opts)
   addTransloaditPlugin(uppy, opts)
 
@@ -23,12 +42,17 @@ function form (target, opts) {
     submitOnSuccess = !!opts.submitOnSuccess
   }
 
-  uppy.use(Form, {
+  const formOptions = {
     target,
     triggerUploadOnSubmit: true,
-    submitOnSuccess: submitOnSuccess,
+    submitOnSuccess,
     addResultToForm: false // using custom implementation instead
-  })
+  }
+  if (opts.hasOwnProperty('triggerUploadOnSubmit')) {
+    formOptions.triggerUploadOnSubmit = opts.triggerUploadOnSubmit
+  }
+
+  uppy.use(Form, formOptions)
 
   const useDashboard = opts.dashboard || opts.modal
 
@@ -42,10 +66,11 @@ function form (target, opts) {
     if (opts.modal) {
       const trigger = 'input[type="file"]'
       const button = document.createElement('button')
-      button.textContent = 'Select files'
+      button.textContent = uppy.i18n('chooseFiles')
       button.type = 'button'
       const old = findDOMElement(trigger, findDOMElement(target))
       old.parentNode.replaceChild(button, old)
+      dashboardOpts.inline = false
       dashboardOpts.trigger = button
     } else {
       dashboardOpts.inline = true

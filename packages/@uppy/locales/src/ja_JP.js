@@ -1,8 +1,7 @@
-/* eslint camelcase: 0 */
-
 const ja_JP = {}
 
 ja_JP.strings = {
+  addMore: 'さらに追加',
   addMoreFiles: 'ファイルを追加',
   addingMoreFiles: 'ファイルを追加しています',
   allowAccessDescription: 'カメラやビデオの機能を使用するには、カメラへのアクセスを許可してください。',
@@ -80,10 +79,10 @@ ja_JP.strings = {
   retry: 'リトライ',
   retryUpload: 'アップロードをリトライ',
   saveChanges: '変更を保存',
-  selectXFiles: {
-    '0': '%{smart_count} ファイルを選択',
-    '1': '%{smart_count} ファイルを選択',
-    '2': '%{smart_count} ファイルを選択'
+  selectX: {
+    '0': '%{smart_count} を選択',
+    '1': '%{smart_count} を選択',
+    '2': '%{smart_count} を選択'
   },
   smile: 'スマイル〜！',
   startRecording: '録画開始',
@@ -131,7 +130,12 @@ ja_JP.strings = {
     '0': '最低でも %{smart_count} ファイル選択してください',
     '1': '最低でも %{smart_count} ファイル選択してください',
     '2': '最低でも %{smart_count} ファイル選択してください'
-  }
+  },
+  selectAllFilesFromFolderNamed: 'フォルダからすべてのファイルを選択 %{name}',
+  unselectAllFilesFromFolderNamed: 'フォルダからすべてのファイルを選択解除 %{name}',
+  selectFileNamed: 'ファイルを選ぶ %{name}',
+  unselectFileNamed: 'ファイルの選択を解除 %{name}',
+  openFolderNamed: '開いたフォルダ %{name}'
 }
 
 ja_JP.pluralize = function (n) {

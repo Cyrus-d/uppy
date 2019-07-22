@@ -1,8 +1,7 @@
-/* eslint camelcase: 0 */
-
 const sr_RS_Latin = {}
 
 sr_RS_Latin.strings = {
+  addMore: 'Dodaj još',
   addMoreFiles: 'Dodaj još datoteka',
   addingMoreFiles: 'Dodavanje datoteka',
   allowAccessDescription: 'Molimo Vas, dozvolite pristup Vašoj kameri, kako biste mogli da je koristite za snimanje fotografija i video zapisa.',
@@ -80,10 +79,10 @@ sr_RS_Latin.strings = {
   retry: 'Pokušaj ponovo',
   retryUpload: 'Pokušaj ponovo da otpremiš',
   saveChanges: 'Sačuvaj izmene',
-  selectXFiles: {
+  selectX: {
     '0': 'Izaberi datoteku',
-    '1': 'Izaberi %{smart_count} datoteke',
-    '2': 'Izaberi %{smart_count} datoteka'
+    '1': 'Izaberi %{smart_count}',
+    '2': 'Izaberi %{smart_count}'
   },
   smile: 'Osmeh!',
   startRecording: 'Započni snimanje video zapisa',
@@ -131,7 +130,12 @@ sr_RS_Latin.strings = {
     '0': 'Izaberite bar jednu datoteku',
     '1': 'Izaberite datoteke. Najmanje: %{smart_count}',
     '2': 'Izaberite datoteke. Najmanje: %{smart_count}'
-  }
+  },
+  selectAllFilesFromFolderNamed: 'Izaberite sve datoteke iz foldera %{name}',
+  unselectAllFilesFromFolderNamed: 'Isključite sve datoteke iz fascikle %{name}',
+  selectFileNamed: 'Izaberite fajl %{name}',
+  unselectFileNamed: 'Isključite fajl %{name}',
+  openFolderNamed: 'Otvori folder %{name}'
 }
 
 sr_RS_Latin.pluralize = function (n) {

@@ -1,8 +1,7 @@
-/* eslint camelcase: 0 */
-
 const en_US = {}
 
 en_US.strings = {
+  addMore: 'Add more',
   addMoreFiles: 'Add more files',
   addingMoreFiles: 'Adding more files',
   allowAccessDescription: 'In order to take pictures or record video with your camera, please allow camera access for this site.',
@@ -63,6 +62,7 @@ en_US.strings = {
   myDevice: 'My Device',
   noFilesFound: 'You have no files or folders here',
   noInternetConnection: 'No Internet connection',
+  openFolderNamed: 'Open folder %{name}',
   pause: 'Pause',
   pauseUpload: 'Pause upload',
   paused: 'Paused',
@@ -80,16 +80,20 @@ en_US.strings = {
   retry: 'Retry',
   retryUpload: 'Retry upload',
   saveChanges: 'Save changes',
-  selectXFiles: {
-    '0': 'Select %{smart_count} file',
-    '1': 'Select %{smart_count} files',
-    '2': 'Select %{smart_count} files'
+  selectAllFilesFromFolderNamed: 'Select all files from folder %{name}',
+  selectFileNamed: 'Select file %{name}',
+  selectX: {
+    '0': 'Select %{smart_count}',
+    '1': 'Select %{smart_count}',
+    '2': 'Select %{smart_count}'
   },
   smile: 'Smile!',
   startRecording: 'Begin video recording',
   stopRecording: 'Stop video recording',
   takePicture: 'Take a picture',
   timedOut: 'Upload stalled for %{seconds} seconds, aborting.',
+  unselectAllFilesFromFolderNamed: 'Unselect all files from folder %{name}',
+  unselectFileNamed: 'Unselect file %{name}',
   upload: 'Upload',
   uploadComplete: 'Upload complete',
   uploadFailed: 'Upload failed',

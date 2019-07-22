@@ -1,8 +1,7 @@
-/* eslint camelcase: 0 */
-
 const pt_BR = {}
 
 pt_BR.strings = {
+  addMore: 'Adicione mais',
   addMoreFiles: 'Adicionar mais arquivos',
   addingMoreFiles: 'Adicionando mais arquivos',
   allowAccessDescription: 'Para poder tirar fotos e gravar vídeos com sua câmera, por favor permita o acesso a câmera para esse site.',
@@ -80,10 +79,10 @@ pt_BR.strings = {
   retry: 'Tentar novamente',
   retryUpload: 'Tentar enviar novamente',
   saveChanges: 'Salvar alterações',
-  selectXFiles: {
-    '0': 'Selecionar %{smart_count} arquivo',
-    '1': 'Selecionar %{smart_count} arquivo',
-    '2': 'Selecionar %{smart_count} arquivos'
+  selectX: {
+    '0': 'Selecionar %{smart_count}',
+    '1': 'Selecionar %{smart_count}',
+    '2': 'Selecionar %{smart_count}'
   },
   smile: 'Sorria!',
   startRecording: 'Começar gravação de vídeo',
@@ -131,7 +130,12 @@ pt_BR.strings = {
     '0': 'Você precisa selecionar pelo menos %{smart_count} arquivo',
     '1': 'Você precisa selecionar pelo menos %{smart_count} arquivos',
     '2': 'Você precisa selecionar pelo menos %{smart_count} arquivos'
-  }
+  },
+  selectAllFilesFromFolderNamed: 'Selecione todos os arquivos da pasta %{name}',
+  unselectAllFilesFromFolderNamed: 'Desmarque todos os arquivos da pasta %{name}',
+  selectFileNamed: 'Selecione o arquivo %{name}',
+  unselectFileNamed: 'Deselecionar arquivo %{name}',
+  openFolderNamed: 'Pasta aberta %{name}'
 }
 
 pt_BR.pluralize = function (n) {

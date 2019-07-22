@@ -39,7 +39,7 @@ module.exports = class AwsS3Multipart extends Plugin {
   constructor (uppy, opts) {
     super(uppy, opts)
     this.type = 'uploader'
-    this.id = 'AwsS3Multipart'
+    this.id = this.opts.id || 'AwsS3Multipart'
     this.title = 'AWS S3 Multipart'
     this.client = new RequestClient(uppy, opts)
 
@@ -96,9 +96,18 @@ module.exports = class AwsS3Multipart extends Plugin {
   createMultipartUpload (file) {
     this.assertHost()
 
+    let metadata = {}
+
+    Object.keys(file.meta).map(key => {
+      if (file.meta[key] != null) {
+        metadata[key] = file.meta[key].toString()
+      }
+    })
+
     return this.client.post('s3/multipart', {
       filename: file.name,
-      type: file.type
+      type: file.type,
+      metadata
     }).then(assertServerError)
   }
 
@@ -177,13 +186,14 @@ module.exports = class AwsS3Multipart extends Plugin {
             uploadURL: result.location
           }
 
+          this.resetUploaderReferences(file.id)
+
           this.uppy.emit('upload-success', file, uploadResp)
 
           if (result.location) {
             this.uppy.log('Download ' + upload.file.name + ' from ' + result.location)
           }
 
-          this.resetUploaderReferences(file.id)
           resolve(upload)
         },
         onPartComplete: (part) => {
